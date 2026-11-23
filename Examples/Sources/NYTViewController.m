@@ -9,7 +9,7 @@
 @import NYTPhotoViewer;
 
 #import "NYTViewController.h"
-#import "NYTExamplePhoto.h"
+#import "Example-Swift.h"
 
 typedef NS_ENUM(NSUInteger, NYTViewControllerPhotoIndex) {
     NYTViewControllerPhotoIndexCustomEverything = 1,

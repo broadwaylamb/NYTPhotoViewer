@@ -12,6 +12,7 @@
 		012F8A9430B495B0002695B6 /* NYTPhotoViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 012F8A9330B495B0002695B6 /* NYTPhotoViewer */; };
 		012F8A9830B497DD002695B6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012F8A9730B497DD002695B6 /* AppDelegate.swift */; };
 		012F8A9B30B498C0002695B6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012F8A9A30B498C0002695B6 /* SceneDelegate.swift */; };
+		012F8A9E30B49CCD002695B6 /* ExamplePhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012F8A8630B48C54002695B6 /* ExamplePhoto.swift */; };
 		076C556E256DE33800D8CA75 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 076C5564256DE33800D8CA75 /* Assets.xcassets */; };
 		076C5571256DE33800D8CA75 /* giphy.gif in Resources */ = {isa = PBXBuildFile; fileRef = 076C5565256DE33800D8CA75 /* giphy.gif */; };
 		CD7B24442576A56A00290A00 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CD7B24422576A56A00290A00 /* LaunchScreen.storyboard */; };
@@ -177,6 +178,7 @@
 				012F8A9830B497DD002695B6 /* AppDelegate.swift in Sources */,
 				012F8A8F30B48C54002695B6 /* NYTViewController.m in Sources */,
 				012F8A9B30B498C0002695B6 /* SceneDelegate.swift in Sources */,
+				012F8A9E30B49CCD002695B6 /* ExamplePhoto.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
