@@ -8,7 +8,7 @@
 
 @import Foundation;
 
-#import "NYTPhotoViewerDataSource.h"
+@import NYTPhotoViewerSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -6,71 +6,77 @@
 //  Copyright (c) 2015 NYTimes. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-
-@protocol NYTPhoto;
-
-NS_ASSUME_NONNULL_BEGIN
+import UIKit
 
 /**
- *  The data source for an `NYTPhotosViewController` instance.
+ *  The data source for an ``NYTPhotosViewController`` instance.
  *
- *  A view controller, view model, or model in your application could conform to this protocol, depending on what makes sense in your architecture.
+ *  A view controller, view model, or model in your application could conform to this
+ *  protocol, depending on what makes sense in your architecture.
  *
- *  Alternatively, `NYTPhotoViewerArrayDataSource` and `NYTPhotoViewerSinglePhotoDataSource` are concrete classes which conveniently handle the most common use cases for NYTPhotoViewer.
+ *  Alternatively, `NYTPhotoViewerArrayDataSource` and
+ *  `NYTPhotoViewerSinglePhotoDataSource` are concrete classes which conveniently handle
+ *  the most common use cases for NYTPhotoViewer.
  */
-@protocol NYTPhotoViewerDataSource <NSObject>
+@objc(NYTPhotoViewerDataSource)
+public protocol PhotoViewerDataSource: NSObjectProtocol {
 
-/**
- *  The total number of photos in the data source, or `nil` if the number is not known.
- *
- *  The number returned should package an `NSInteger` value.
- */
-@property (nonatomic, readonly, nullable) NSNumber *numberOfPhotos;
+    /**
+     *  The total number of photos in the data source, or `nil` if the number is
+     *  not known.
+     *
+     *  The number returned should package an `NSInteger` value.
+     */
+    var numberOfPhotos: NSNumber? { get } // TODO: Use `Int?` type
 
-/**
- *  Returns the index of a given photo, or `NSNotFound` if the photo is not in the data source.
- *
- *  @param photo The photo against which to look for the index.
- *
- *  @return The index of a given photo, or `NSNotFound` if the photo is not in the data source.
- */
-- (NSInteger)indexOfPhoto:(id <NYTPhoto>)photo;
+    /**
+     *  Returns the index of a given photo, or `NSNotFound` if the photo is not in
+     *  the data source.
+     *
+     *  @param photo The photo against which to look for the index.
+     *
+     *  @return The index of a given photo, or `NSNotFound` if the photo is not in
+     *  the data source.
+     */
+    @objc(indexOfPhoto:)
+    func index(of photo: any NYTPhoto) -> Int
 
-/**
- *  Returns the photo object at a specified index, or `nil` if one does not exist at that index.
- *
- *  @param photoIndex The index of the desired photo.
- *
- *  @return The photo object at a specified index, or `nil` if one does not exist at that index.
- */
-- (nullable id <NYTPhoto>)photoAtIndex:(NSInteger)photoIndex;
+    /**
+     *  Returns the photo object at a specified index, or `nil` if one does not exist at
+     *  that index.
+     *
+     *  @param photoIndex The index of the desired photo.
+     *
+     *  @return The photo object at a specified index, or `nil` if one does not exist at
+     *  that index.
+     */
+    subscript(photoIndex: Int) -> (any NYTPhoto)? { @objc(photoAtIndex:) get }
 
-@optional
+    // TODO: Use default implementations instead of optionality
+    // TODO: Use Int? instead of NSNumber
+    /**
+     *  The total number of interstitial views in the data source, or `nil` if the number
+     *  is not known.
+     *
+     *  The number returned should package an `NSInteger` value.
+     */
+    @objc
+    optional var numberOfInterstitialViews: NSNumber? { get }
 
-/**
- *  The total number of interstitial views in the data source.
- *
- *  The number returned should package an `NSInteger` value.
- *
- *  @return The number of interstitial views or `nil` if the number is not known.
- */
-- (NSNumber *)numberOfInterstitialViews;
+    /**
+     *  Indicates if the item at the specified index is a photo.
+     *
+     *  @return `true` if the item at the specified index is a photo, `false` otherwise.
+     */
+    @objc
+    optional func isPhoto(atIndex idx: Int) -> Bool
 
-/**
- *  Indicates if the item at the specified index is a photo.
- *
- *  @return `true` if the item at the specified index is a photo, `false` otherwise.
- */
-- (BOOL)isPhotoAtIndex:(NSInteger)idx;
-
-/**
- *  Indicates if the item at the specified index is an interstitial view.
- *
- *  @return `true` if the item at the specified index is an interstitial view, `false` otherwise.
- */
-- (BOOL)isInterstitialViewAtIndex:(NSInteger)idx;
-
-@end
-
-NS_ASSUME_NONNULL_END
+    /**
+     *  Indicates if the item at the specified index is an interstitial view.
+     *
+     *  @return `true` if the item at the specified index is an interstitial view,
+     *  `false` otherwise.
+     */
+    @objc
+    optional func isInterstitialView(atIndex idx: Int) -> Bool
+}

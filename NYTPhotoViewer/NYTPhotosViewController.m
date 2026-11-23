@@ -7,7 +7,7 @@
 //
 
 #import "NYTPhotosViewController.h"
-#import "NYTPhotoViewerDataSource.h"
+@import NYTPhotoViewerSwift;
 #import "NYTPhotoViewerArrayDataSource.h"
 #import "NYTPhotoViewController.h"
 #import "NYTInterstitialViewController.h"
