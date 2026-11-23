@@ -6,34 +6,29 @@
 //  Copyright © 2017 The New York Times Company. All rights reserved.
 //
 
-@import Foundation;
-@import NYTPhotoViewerSwift;
-
-NS_ASSUME_NONNULL_BEGIN
+import Foundation
 
 /**
- *  A simple concrete implementation of `NYTPhotoViewerDataSource`, for use with a single image.
+ *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with a single
+ *  image.
  */
-@interface NYTPhotoViewerSinglePhotoDataSource : NSObject <NYTPhotoViewerDataSource>
+@objc(NYTPhotoViewerSinglePhotoDataSource)
+public final class PhotoViewerSinglePhotoDataSource: NSObject, PhotoViewerDataSource {
+    public let photo: any NYTPhoto
 
-@property (nonatomic, readonly) id<NYTPhoto> photo;
+    public init(photo: any NYTPhoto) {
+        self.photo = photo
+    }
 
-/**
- *  The designated initializer that takes and stores a single photo.
- *
- *  @param photo An object conforming to the `NYTPhoto` protocol.
- *
- *  @return A fully initialized data source.
- */
-- (instancetype)initWithPhoto:(id<NYTPhoto>)photo NS_DESIGNATED_INITIALIZER;
+    public var numberOfPhotos: NSNumber? {
+        return 1
+    }
 
-+ (instancetype)dataSourceWithPhoto:(id<NYTPhoto>)photo;
+    public subscript(photoIndex: Int) -> (any NYTPhoto)? {
+        return photo
+    }
 
-/**
- *  Initializing without a photo is invalid.
- */
-- (instancetype)init NS_UNAVAILABLE;
-
-@end
-
-NS_ASSUME_NONNULL_END
+    public func index(of photo: any NYTPhoto) -> Int {
+        return 0
+    }
+}
