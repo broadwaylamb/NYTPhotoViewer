@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "NYTPhotoCaptionViewLayoutWidthHinting.h"
+
+@protocol NYTPhotoCaptionViewLayoutWidthHinting;
 
 NS_ASSUME_NONNULL_BEGIN
 

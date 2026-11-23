@@ -6,6 +6,7 @@
 //
 //
 
+@import NYTPhotoViewerSwift;
 #import "NYTPhotoCaptionView.h"
 
 static const CGFloat NYTPhotoCaptionViewHorizontalMargin = 8.0;

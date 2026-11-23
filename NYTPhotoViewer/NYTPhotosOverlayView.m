@@ -7,7 +7,7 @@
 //
 
 #import "NYTPhotosOverlayView.h"
-#import "NYTPhotoCaptionViewLayoutWidthHinting.h"
+@import NYTPhotoViewerSwift;
 
 @interface UIView (NYTSafeArea)
 
