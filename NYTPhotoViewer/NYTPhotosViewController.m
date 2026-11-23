@@ -9,7 +9,6 @@
 #import "NYTPhotosViewController.h"
 @import NYTPhotoViewerSwift;
 #import "NYTPhotoViewController.h"
-#import "NYTInterstitialViewController.h"
 #import "NYTPhotoTransitionController.h"
 #import "NYTScalingImageView.h"
 #import "NYTPhotosOverlayView.h"

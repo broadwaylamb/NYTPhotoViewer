@@ -6,82 +6,73 @@
 //  Copyright © 2018 NYTimes. All rights reserved.
 //
 
-#import "NYTInterstitialViewController.h"
-@import NYTPhotoViewerSwift;
+import UIKit
 
-@interface NYTInterstitialViewController ()
+/**
+ *  The view controller controlling the display of a interstitial view.
+ */
+// TODO: Make this class internal
+@objc(NYTInterstitialViewController)
+public final class InterstitialViewController: UIViewController {
+    private var photo: (any NYTPhoto)?
+    private let interstitialView: UIView?
+    private var photoViewItemIndex: Int = 0
+    private var constraints: [NSLayoutConstraint] = []
 
-@property (nonatomic, nullable) id <NYTPhoto> photo;
-@property (nonatomic, nullable) UIView *interstitialView;
-@property (nonatomic) NSInteger photoViewItemIndex;
-@property (copy, nullable) NSArray<NSLayoutConstraint *> *constraints;
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
-
-@end
-
-@implementation NYTInterstitialViewController
-
-#pragma mark - UIViewController
-
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    return [self initWithView:nil itemIndex:0];
-}
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-
-    if (self) {
-        [self commonInitWithView:nil itemIndex:0];
+    /**
+     *  The designated initializer that takes an interstitial view.
+     *
+     *  @param view      The view object that this view controller manages.
+     *  @param itemIndex The index of this view controller in the photo viewer collection.
+     */
+    @objc
+    public init(view: UIView?, itemIndex: Int) {
+        interstitialView = view
+        photoViewItemIndex = itemIndex
+        super.init(nibName: nil, bundle: nil)
     }
 
-    return self;
-}
+    // MARK: - UIViewController
 
-- (void)prepareLayout {
-    if (self.interstitialView.translatesAutoresizingMaskIntoConstraints) {
-        self.interstitialView.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
-    } else if (self.constraints == nil) {
-        self.constraints = @[
-          [self.interstitialView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-          [self.interstitialView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
-        ];
-        [NSLayoutConstraint activateConstraints:self.constraints];
-    }
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    [self.view addSubview:self.interstitialView];
-    [self prepareLayout];
-}
-
-- (void)viewWillLayoutSubviews {
-    [super viewWillLayoutSubviews];
-    [self prepareLayout];
-}
-
-- (BOOL)prefersHomeIndicatorAutoHidden {
-    return YES;
-}
-
-#pragma mark - NYTPhotoViewController
-
-- (instancetype)initWithView:(UIView *)interstitialView itemIndex:(NSUInteger)itemIndex {
-    self = [super initWithNibName:nil bundle:nil];
-
-    if (self) {
-        [self commonInitWithView:interstitialView itemIndex:itemIndex];
+    public override convenience init(
+        nibName nibNameOrNil: String?,
+        bundle nibBundleOrNil: Bundle?
+    ) {
+        self.init(view: nil, itemIndex: 0)
     }
 
-    return self;
-}
+    public required init?(coder: NSCoder) {
+        interstitialView = nil
+        super.init(coder: coder)
+    }
 
-- (void)commonInitWithView:(UIView *)interstitialView itemIndex:(NSUInteger)itemIndex {
-    _photo = nil;
-    _photoViewItemIndex = itemIndex;
-    _interstitialView = interstitialView;
-}
+    private func prepareLayout() {
+        guard let interstitialView else { return }
+        if interstitialView.translatesAutoresizingMaskIntoConstraints {
+            interstitialView.center = CGPoint(x: view.bounds.midX, y: view.bounds.midY)
+        } else {
+            constraints = [
+                interstitialView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                interstitialView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            ]
+            NSLayoutConstraint.activate(constraints)
+        }
+    }
 
-@end
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        if let interstitialView {
+            view.addSubview(interstitialView)
+        }
+        prepareLayout()
+    }
+
+    public override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        prepareLayout()
+    }
+
+    public override var prefersHomeIndicatorAutoHidden: Bool {
+        true
+    }
+}
