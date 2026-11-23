@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "NYTPhotoViewerContainer.h"
+@import NYTPhotoViewerSwift;
 
 @class NYTScalingImageView;
 

@@ -16,7 +16,7 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
 
 @property (nonatomic, nullable) id <NYTPhoto> photo;
 @property (nonatomic, nullable) UIView *interstitialView;
-@property (nonatomic) NSUInteger photoViewItemIndex;
+@property (nonatomic) NSInteger photoViewItemIndex;
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 

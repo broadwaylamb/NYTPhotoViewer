@@ -7,7 +7,7 @@
 //
 
 @import UIKit;
-#import "NYTPhotoViewerContainer.h"
+@import NYTPhotoViewerSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
