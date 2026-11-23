@@ -20,6 +20,7 @@ let package = Package(
                 "PhotoViewerSinglePhotoDataSource.swift",
                 "PhotoViewerArrayDataSource.swift",
                 "PhotoViewerContainer.swift",
+                "Bundle+NYTPhotoViewer.swift",
             ],
         ),
         .target(
@@ -31,7 +32,11 @@ let package = Package(
                 "PhotoViewerSinglePhotoDataSource.swift",
                 "PhotoViewerArrayDataSource.swift",
                 "PhotoViewerContainer.swift",
+                "Bundle+NYTPhotoViewer.swift",
             ],
+            resources: [
+                .process("Media.xcassets"),
+            ]
         )
     ]
 )

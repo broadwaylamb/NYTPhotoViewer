@@ -14,7 +14,6 @@
 #import "NYTScalingImageView.h"
 #import "NYTPhotosOverlayView.h"
 #import "NYTPhotoCaptionView.h"
-#import "NSBundle+NYTPhotoViewer.h"
 #import <LinkPresentation/LPLinkMetadata.h>
 
 NSString * const NYTPhotosViewControllerDidNavigateToPhotoNotification = @"NYTPhotosViewControllerDidNavigateToPhotoNotification";

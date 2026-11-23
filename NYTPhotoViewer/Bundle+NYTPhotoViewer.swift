@@ -6,22 +6,11 @@
 //
 //
 
-#import "NSBundle+NYTPhotoViewer.h"
-#import "NYTPhotosViewController.h"
+import Foundation
 
-@implementation NSBundle (NYTPhotoViewer)
-
-+ (instancetype)nyt_photoViewerResourceBundle {
-    #if SWIFT_PACKAGE
-    return SWIFTPM_MODULE_BUNDLE;
-    #endif
-    static NSBundle *resourceBundle = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSString *resourceBundlePath = [[NSBundle bundleForClass:[NYTPhotosViewController class]] pathForResource:@"NYTPhotoViewer" ofType:@"bundle"];
-        resourceBundle = [self bundleWithPath:resourceBundlePath];
-    });
-    return resourceBundle;
+extension Bundle {
+    @objc // TODO: inline this property
+    public static var nyt_photoViewerResourceBundle: Bundle {
+        Bundle.module
+    }
 }
-
-@end
