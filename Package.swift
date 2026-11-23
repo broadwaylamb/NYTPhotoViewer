@@ -21,6 +21,7 @@ let package = Package(
                 "PhotoViewerArrayDataSource.swift",
                 "PhotoViewerContainer.swift",
                 "Bundle+NYTPhotoViewer.swift",
+                "InterstitialViewController.swift",
             ],
         ),
         .target(
@@ -33,6 +34,7 @@ let package = Package(
                 "PhotoViewerArrayDataSource.swift",
                 "PhotoViewerContainer.swift",
                 "Bundle+NYTPhotoViewer.swift",
+                "InterstitialViewController.swift",
             ],
             resources: [
                 .process("Media.xcassets"),
