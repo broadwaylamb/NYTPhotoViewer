@@ -24,6 +24,7 @@ let package = Package(
                 "InterstitialViewController.swift",
                 "ScalingImageView.swift",
                 "PhotoCaptionViewLayoutWidthHinting.swift",
+                "PhotosOverlayView.swift",
             ],
         ),
         .target(
@@ -39,6 +40,7 @@ let package = Package(
                 "InterstitialViewController.swift",
                 "ScalingImageView.swift",
                 "PhotoCaptionViewLayoutWidthHinting.swift",
+                "PhotosOverlayView.swift",
             ],
             resources: [
                 .process("Media.xcassets"),
