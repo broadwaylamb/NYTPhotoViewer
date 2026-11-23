@@ -17,6 +17,7 @@ let package = Package(
             exclude: [
                 "NYTPhoto.swift",
                 "PhotoViewerDataSource.swift",
+                "PhotoViewerSinglePhotoDataSource.swift",
             ],
         ),
         .target(
@@ -25,6 +26,7 @@ let package = Package(
             sources: [
                 "NYTPhoto.swift",
                 "PhotoViewerDataSource.swift",
+                "PhotoViewerSinglePhotoDataSource.swift",
             ],
         )
     ]
