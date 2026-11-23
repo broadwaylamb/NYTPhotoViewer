@@ -291,7 +291,10 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtonImageInsets = {3, 0,
         UIImage *image = self.currentlyDisplayedPhoto.image ? self.currentlyDisplayedPhoto.image : [UIImage imageWithData:self.currentlyDisplayedPhoto.imageData];
         UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[self, image] applicationActivities:nil];
         activityViewController.popoverPresentationController.barButtonItem = sender;
-        activityViewController.completionWithItemsHandler = ^(NSString * __nullable activityType, BOOL completed, NSArray * __nullable returnedItems, NSError * __nullable activityError) {
+        activityViewController.completionWithItemsHandler = ^(UIActivityType __nullable activityType,
+                                                              BOOL completed,
+                                                              NSArray * __nullable returnedItems,
+                                                              NSError * __nullable activityError) {
             if (completed && [self.delegate respondsToSelector:@selector(photosViewController:actionCompletedWithActivityType:)]) {
                 [self.delegate photosViewController:self actionCompletedWithActivityType:activityType];
             }
@@ -303,7 +306,7 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtonImageInsets = {3, 0,
 
 - (void)displayActivityViewController:(UIActivityViewController *)controller animated:(BOOL)animated {
 
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
         [self presentViewController:controller animated:animated completion:nil];
     }
     else {
@@ -592,8 +595,7 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtonImageInsets = {3, 0,
         UIMenuController *menuController = [UIMenuController sharedMenuController];
         CGRect targetRect = CGRectZero;
         targetRect.origin = [longPressGestureRecognizer locationInView:longPressGestureRecognizer.view];
-        [menuController setTargetRect:targetRect inView:longPressGestureRecognizer.view];
-        [menuController setMenuVisible:YES animated:YES];
+        [menuController showMenuFromView:longPressGestureRecognizer.view rect:targetRect];
     }
 }
 

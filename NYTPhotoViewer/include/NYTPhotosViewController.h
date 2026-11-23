@@ -307,7 +307,7 @@ extern NSString * const NYTPhotosViewControllerDidDismissNotification;
  *  @param photosViewController The `NYTPhotosViewController` instance that sent the delegate message.
  *  @param activityType         The activity type that was successfully shared.
  */
-- (void)photosViewController:(NYTPhotosViewController *)photosViewController actionCompletedWithActivityType:(nullable NSString *)activityType;
+- (void)photosViewController:(NYTPhotosViewController *)photosViewController actionCompletedWithActivityType:(nullable  UIActivityType)activityType;
 
 /**
  *  called when an `NYTInterstitialViewController` is created but before it is displayed. Returns the view to display as an interstitial view.
