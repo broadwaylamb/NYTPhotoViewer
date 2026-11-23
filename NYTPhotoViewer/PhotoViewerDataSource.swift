@@ -39,7 +39,7 @@ public protocol PhotoViewerDataSource: NSObjectProtocol {
      *  the data source.
      */
     @objc(indexOfPhoto:)
-    func index(of photo: any NYTPhoto) -> Int
+    func index(of photo: any NYTPhoto) -> Int // TODO: Return `Int?`
 
     /**
      *  Returns the photo object at a specified index, or `nil` if one does not exist at

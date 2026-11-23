@@ -8,12 +8,10 @@
 
 #import "NYTPhotosViewController.h"
 @import NYTPhotoViewerSwift;
-#import "NYTPhotoViewerArrayDataSource.h"
 #import "NYTPhotoViewController.h"
 #import "NYTInterstitialViewController.h"
 #import "NYTPhotoTransitionController.h"
 #import "NYTScalingImageView.h"
-@import NYTPhotoViewerSwift;
 #import "NYTPhotosOverlayView.h"
 #import "NYTPhotoCaptionView.h"
 #import "NSBundle+NYTPhotoViewer.h"
@@ -86,14 +84,14 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtonImageInsets = {3, 0,
 #pragma mark - UIViewController
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    return [self initWithDataSource:[NYTPhotoViewerArrayDataSource dataSourceWithPhotos:@[]] initialPhoto:nil delegate:nil];
+    return [self initWithDataSource:[[NYTPhotoViewerArrayDataSource alloc] initWithPhotos:@[]] initialPhoto:nil delegate:nil];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
 
     if (self) {
-        [self commonInitWithDataSource:[NYTPhotoViewerArrayDataSource dataSourceWithPhotos:@[]] initialPhoto:nil delegate:nil];
+        [self commonInitWithDataSource:[[NYTPhotoViewerArrayDataSource alloc] initWithPhotos:@[]] initialPhoto:nil delegate:nil];
     }
 
     return self;

@@ -6,33 +6,36 @@
 //  Copyright (c) 2017 The New York Times Company. All rights reserved.
 //
 
-@import Foundation;
+import Foundation
 
-@import NYTPhotoViewerSwift;
-
-NS_ASSUME_NONNULL_BEGIN
 
 /**
- *  A simple concrete implementation of `NYTPhotoViewerDataSource`, for use with an array of images.
- *  Does not support interstitial views.
+ *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with an array
+ *  of images. Does not support interstitial views.
  */
-@interface NYTPhotoViewerArrayDataSource : NSObject <NYTPhotoViewerDataSource, NSFastEnumeration>
+@objc(NYTPhotoViewerArrayDataSource)
+public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
+    public let photos: [any NYTPhoto]
 
-@property (nonatomic, readonly) NSArray<id<NYTPhoto>> *photos;
+    @objc
+    public init(photos: [any NYTPhoto]) {
+        self.photos = photos
+    }
 
-/**
- *  The designated initializer that takes and stores an array of photos.
- *
- *  @param photos An array of objects conforming to the `NYTPhoto` protocol.
- *
- *  @return A fully initialized data source.
- */
-- (instancetype)initWithPhotos:(nullable NSArray<id<NYTPhoto>> *)photos NS_DESIGNATED_INITIALIZER;
+    public var numberOfPhotos: NSNumber? {
+        return photos.count as NSNumber
+    }
 
-+ (instancetype)dataSourceWithPhotos:(nullable NSArray<id<NYTPhoto>> *)photos;
+    public subscript(photoIndex: Int) -> (any NYTPhoto)? {
+        if photoIndex < photos.count {
+            return photos[photoIndex]
+        }
 
-- (id<NYTPhoto>)objectAtIndexedSubscript:(NSUInteger)idx;
+        return nil
+    }
 
-@end
-
-NS_ASSUME_NONNULL_END
+    public func index(of photo: any NYTPhoto) -> Int {
+        // TODO: Use Equatable
+        return photos.firstIndex { $0.isEqual(photo) } ?? NSNotFound
+    }
+}
