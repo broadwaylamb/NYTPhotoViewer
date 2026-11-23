@@ -18,6 +18,7 @@ let package = Package(
                 "NYTPhoto.swift",
                 "PhotoViewerDataSource.swift",
                 "PhotoViewerSinglePhotoDataSource.swift",
+                "PhotoViewerArrayDataSource.swift",
             ],
         ),
         .target(
@@ -27,6 +28,7 @@ let package = Package(
                 "NYTPhoto.swift",
                 "PhotoViewerDataSource.swift",
                 "PhotoViewerSinglePhotoDataSource.swift",
+                "PhotoViewerArrayDataSource.swift",
             ],
         )
     ]
