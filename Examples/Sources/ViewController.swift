@@ -7,6 +7,7 @@
 //
 
 import NYTPhotoViewer
+import NYTPhotoViewerSwift
 import UIKit
 
 final class ViewController: UIViewController, @MainActor NYTPhotosViewControllerDelegate {

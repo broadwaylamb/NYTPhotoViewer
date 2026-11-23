@@ -13,7 +13,7 @@
 #import "NYTInterstitialViewController.h"
 #import "NYTPhotoTransitionController.h"
 #import "NYTScalingImageView.h"
-#import "NYTPhoto.h"
+@import NYTPhotoViewerSwift;
 #import "NYTPhotosOverlayView.h"
 #import "NYTPhotoCaptionView.h"
 #import "NSBundle+NYTPhotoViewer.h"

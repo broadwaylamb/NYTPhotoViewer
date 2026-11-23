@@ -7,7 +7,7 @@
 //
 
 #import "NYTInterstitialViewController.h"
-#import "NYTPhoto.h"
+@import NYTPhotoViewerSwift;
 
 @interface NYTInterstitialViewController ()
 

@@ -7,9 +7,23 @@ let package = Package(
         .iOS(.v15),
     ],
     products: [
-        .library(name: "NYTPhotoViewer", targets: ["NYTPhotoViewer"]),
+        .library(name: "NYTPhotoViewer", targets: ["NYTPhotoViewer", "NYTPhotoViewerSwift"]),
     ],
     targets: [
-        .target(name: "NYTPhotoViewer", path: "NYTPhotoViewer"),
+        .target(
+            name: "NYTPhotoViewer",
+            dependencies: ["NYTPhotoViewerSwift"],
+            path: "NYTPhotoViewer",
+            exclude: [
+                "NYTPhoto.swift",
+            ],
+        ),
+        .target(
+            name: "NYTPhotoViewerSwift",
+            path: "NYTPhotoViewer",
+            sources: [
+                "NYTPhoto.swift",
+            ],
+        )
     ]
 )

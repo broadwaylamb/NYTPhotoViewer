@@ -7,7 +7,7 @@
 //
 
 #import "NYTPhotoViewController.h"
-#import "NYTPhoto.h"
+@import NYTPhotoViewerSwift;
 #import "NYTScalingImageView.h"
 
 NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhotoViewControllerPhotoImageUpdatedNotification";

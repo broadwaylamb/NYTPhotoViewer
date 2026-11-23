@@ -8,8 +8,8 @@
 
 import Foundation
 import NYTPhotoViewer
+import NYTPhotoViewerSwift
 
-@objc(NYTExamplePhoto)
 final class ExamplePhoto: NSObject, NYTPhoto {
     // Redeclare all the properties as readwrite for sample/testing purposes.
     var image: UIImage?
