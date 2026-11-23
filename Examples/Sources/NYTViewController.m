@@ -6,9 +6,9 @@
 //  Copyright (c) 2014 Brian Capps. All rights reserved.
 //
 
+@import NYTPhotoViewer;
+
 #import "NYTViewController.h"
-#import <NYTPhotoViewer/NYTPhotosViewController.h>
-#import <NYTPhotoViewer/NYTPhotoViewerArrayDataSource.h>
 #import "NYTExamplePhoto.h"
 
 typedef NS_ENUM(NSUInteger, NYTViewControllerPhotoIndex) {
