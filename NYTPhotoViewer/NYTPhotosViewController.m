@@ -10,7 +10,6 @@
 @import NYTPhotoViewerSwift;
 #import "NYTPhotoViewController.h"
 #import "NYTPhotoTransitionController.h"
-#import "NYTPhotosOverlayView.h"
 #import "NYTPhotoCaptionView.h"
 #import <LinkPresentation/LPLinkMetadata.h>
 

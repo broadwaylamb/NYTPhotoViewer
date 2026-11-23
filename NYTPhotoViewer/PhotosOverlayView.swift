@@ -6,164 +6,232 @@
 //
 //
 
-#import "NYTPhotosOverlayView.h"
-@import NYTPhotoViewerSwift;
+import UIKit
 
-@interface UIView (NYTSafeArea)
+/**
+ *  A view that overlays an ``NYTPhotosViewController``, and houses the left and right bar
+ *  button items, a title, and a caption view.
+ */
+@objc(NYTPhotosOverlayView)
+open class PhotosOverlayView: UIView {
 
-@property (nonatomic, readonly, strong) UILayoutGuide *safeAreaLayoutGuide;
+    /**
+     *  The internal navigation bar used to set the bar button items and title of
+     *  the overlay.
+     */
+    public let navigationBar = UINavigationBar()
 
-@end
-
-@interface NYTPhotosOverlayView ()
-
-@property (nonatomic) UINavigationItem *navigationItem;
-@property (nonatomic) UINavigationBar *navigationBar;
-
-@end
-
-@implementation NYTPhotosOverlayView
-
-#pragma mark - UIView
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    
-    if (self) {
-        [self setupNavigationBar];
+    /**
+     *  A view representing the caption for the photo, which will be set to full width and
+     *  locked to the bottom. Can be any `UIView` object, but is expected to respond to
+     *  `intrinsicContentSize` appropriately to calculate height.
+     */
+    @objc
+    public var captionView: UIView? {
+        willSet {
+            willSetCaptionView(newValue)
+        }
     }
-    
-    return self;
-}
 
-// Pass the touches down to other views: http://stackoverflow.com/a/8104378
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-    UIView *hitView = [super hitTest:point withEvent:event];
-    
-    if (hitView == self) {
-        return nil;
+    /**
+     *  Whether the `captionView` should respect the safe area or not
+     */
+    @objc
+    public var captionViewRespectsSafeArea: Bool = false
+
+    private var navigationItem = UINavigationItem(title: "")
+
+    // MARK: - UIView
+    public override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupNavigationBar()
     }
-    
-    return hitView;
-}
 
-- (void)layoutSubviews {
-    // The navigation bar has a different intrinsic content size upon rotation, so we must update to that new size.
-    // Do it without animation to more closely match the behavior in `UINavigationController`
-    [UIView performWithoutAnimation:^{
-        [self.navigationBar invalidateIntrinsicContentSize];
-        [self.navigationBar layoutIfNeeded];
-    }];
-    
-    [super layoutSubviews];
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupNavigationBar()
+    }
 
-    if ([self.captionView conformsToProtocol:@protocol(NYTPhotoCaptionViewLayoutWidthHinting)]) {
-        [(id<NYTPhotoCaptionViewLayoutWidthHinting>) self.captionView setPreferredMaxLayoutWidth:self.bounds.size.width];
+    // Pass the touches down to other views: http://stackoverflow.com/a/8104378
+    open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+
+        if hitView === self {
+            return nil
+        }
+
+        return hitView
+    }
+
+    open override func layoutSubviews() {
+        // The navigation bar has a different intrinsic content size upon rotation,
+        // so we must update to that new size.
+        // Do it without animation to more closely match the behavior in `UINavigationController`
+        UIView.performWithoutAnimation {
+            navigationBar.invalidateIntrinsicContentSize()
+            navigationBar.layoutIfNeeded()
+        }
+
+        super.layoutSubviews()
+
+        if let captionView = self.captionView as? PhotoCaptionViewLayoutWidthHinting {
+            captionView.preferredMaxLayoutWidth = bounds.size.width
+        }
+    }
+
+    // MARK: - PhotosOverlayView
+
+    private func setupNavigationBar() {
+        navigationBar.translatesAutoresizingMaskIntoConstraints = false
+
+        // Make navigation bar background fully transparent.
+        navigationBar.backgroundColor = .clear
+        navigationBar.barTintColor = nil
+        navigationBar.isTranslucent = true
+        navigationBar.shadowImage = UIImage()
+        navigationBar.setBackgroundImage(UIImage(), for: .default)
+
+        navigationBar.items = [navigationItem]
+
+        addSubview(navigationBar)
+
+        let topConstraint = navigationBar.topAnchor
+            .constraint(equalTo: safeAreaLayoutGuide.topAnchor)
+        let leadingConstraint = navigationBar.leadingAnchor
+            .constraint(equalTo: safeAreaLayoutGuide.leadingAnchor)
+        let trailingConstraint = navigationBar.trailingAnchor
+            .constraint(equalTo: safeAreaLayoutGuide.trailingAnchor)
+        addConstraints([topConstraint, leadingConstraint, trailingConstraint])
+    }
+
+    private func willSetCaptionView(_ captionView: UIView?) {
+        if self.captionView === captionView {
+            return
+        }
+
+        self.captionView?.removeFromSuperview()
+
+        guard let captionView else { return }
+        captionView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(captionView)
+
+        if captionViewRespectsSafeArea {
+            let bottomConstraint = captionView.bottomAnchor
+                .constraint(equalTo: safeAreaLayoutGuide.bottomAnchor)
+            let leadingConstraint = captionView.leadingAnchor
+                .constraint(equalTo: safeAreaLayoutGuide.leadingAnchor)
+            let trailingAnchor = captionView.trailingAnchor
+                .constraint(equalTo: safeAreaLayoutGuide.trailingAnchor)
+            addConstraints([bottomConstraint, leadingConstraint, trailingAnchor])
+        } else {
+            let bottomConstraint = NSLayoutConstraint(
+                item: captionView,
+                attribute: .bottom,
+                relatedBy: .equal,
+                toItem: self,
+                attribute: .bottom,
+                multiplier: 1,
+                constant: 0,
+            )
+            let widthConstraint = NSLayoutConstraint(
+                item: captionView,
+                attribute: .width,
+                relatedBy: .equal,
+                toItem: self,
+                attribute: .width,
+                multiplier: 1,
+                constant: 0,
+            )
+            let horizontalPositionConstraint = NSLayoutConstraint(
+                item: captionView,
+                attribute: .centerX,
+                relatedBy: .equal,
+                toItem: self,
+                attribute: .centerX,
+                multiplier: 1,
+                constant: 0,
+            )
+            addConstraints(
+                [bottomConstraint, widthConstraint, horizontalPositionConstraint]
+            )
+        }
+    }
+
+    /**
+     *  The bar button item appearing at the top left of the overlay.
+     */
+    @objc
+    public var leftBarButtonItem: UIBarButtonItem? {
+        get {
+            navigationItem.leftBarButtonItem
+        }
+        set {
+            navigationItem.setLeftBarButton(newValue, animated: false)
+        }
+    }
+
+    /**
+     *  The bar button items appearing at the top left of the overlay.
+     */
+    @objc
+    public var leftBarButtonItems: [UIBarButtonItem]? {
+        get {
+            navigationItem.leftBarButtonItems
+        }
+        set {
+            navigationItem.setLeftBarButtonItems(newValue, animated: false)
+        }
+    }
+
+    /**
+     *  The bar button item appearing at the top right of the overlay.
+     */
+    @objc
+    public var rightBarButtonItem: UIBarButtonItem? {
+        get {
+            navigationItem.rightBarButtonItem
+        }
+        set {
+            navigationItem.setRightBarButton(newValue, animated: false)
+        }
+    }
+
+    /**
+     *  The bar button items appearing at the top right of the overlay.
+     */
+    @objc
+    public var rightBarButtonItems: [UIBarButtonItem]? {
+        get {
+            navigationItem.rightBarButtonItems
+        }
+        set {
+            navigationItem.setRightBarButtonItems(newValue, animated: false)
+        }
+    }
+
+    /**
+     *  The title of the overlay. Centered between the left and right bar button items.
+     */
+    @objc
+    public var title: String? {
+        get {
+            navigationItem.title
+        }
+        set {
+            navigationItem.title = newValue
+        }
+    }
+
+    /**
+     *  The attributes of the overlay's title.
+     */
+    @objc
+    public var titleTextAttributes: [NSAttributedString.Key : Any]? {
+        get {
+            navigationBar.titleTextAttributes
+        }
+        set {
+            navigationBar.titleTextAttributes = newValue
+        }
     }
 }
-
-#pragma mark - NYTPhotosOverlayView
-
-- (void)setupNavigationBar {
-    self.navigationBar = [[UINavigationBar alloc] init];
-    self.navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    // Make navigation bar background fully transparent.
-    self.navigationBar.backgroundColor = [UIColor clearColor];
-    self.navigationBar.barTintColor = nil;
-    self.navigationBar.translucent = YES;
-    self.navigationBar.shadowImage = [[UIImage alloc] init];
-    [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
-    
-    self.navigationItem = [[UINavigationItem alloc] initWithTitle:@""];
-    self.navigationBar.items = @[self.navigationItem];
-    
-    [self addSubview:self.navigationBar];
-    
-    if ([self respondsToSelector:@selector(safeAreaLayoutGuide)]) {
-        NSLayoutConstraint *topConstraint = [self.navigationBar.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor];
-        NSLayoutConstraint *leftConstraint = [self.navigationBar.leftAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leftAnchor];
-        NSLayoutConstraint *rightConstraint = [self.navigationBar.rightAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.rightAnchor];
-        [self addConstraints:@[topConstraint, leftConstraint, rightConstraint]];
-    } else {
-        NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeWidth multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *horizontalPositionConstraint = [NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];
-        [self addConstraints:@[topConstraint, widthConstraint, horizontalPositionConstraint]];
-    }
-}
-
-- (void)setCaptionView:(UIView *)captionView {
-    if (self.captionView == captionView) {
-        return;
-    }
-    
-    [self.captionView removeFromSuperview];
-    
-    _captionView = captionView;
-    
-    self.captionView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:self.captionView];
-
-    if ([self respondsToSelector:@selector(safeAreaLayoutGuide)] && self.captionViewRespectsSafeArea) {
-        NSLayoutConstraint *bottomConstraint = [self.captionView.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor];
-        NSLayoutConstraint *leftConstraint = [self.captionView.leftAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leftAnchor];
-        NSLayoutConstraint *rightConstraint = [self.captionView.rightAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.rightAnchor];
-        [self addConstraints:@[bottomConstraint, leftConstraint, rightConstraint]];
-    } else {
-        NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:self.captionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:self.captionView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeWidth multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *horizontalPositionConstraint = [NSLayoutConstraint constraintWithItem:self.captionView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];
-        [self addConstraints:@[bottomConstraint, widthConstraint, horizontalPositionConstraint]];
-    }
-}
-
-- (UIBarButtonItem *)leftBarButtonItem {
-    return self.navigationItem.leftBarButtonItem;
-}
-
-- (void)setLeftBarButtonItem:(UIBarButtonItem *)leftBarButtonItem {
-    [self.navigationItem setLeftBarButtonItem:leftBarButtonItem animated:NO];
-}
-
-- (NSArray *)leftBarButtonItems {
-    return self.navigationItem.leftBarButtonItems;
-}
-
-- (void)setLeftBarButtonItems:(NSArray *)leftBarButtonItems {
-    [self.navigationItem setLeftBarButtonItems:leftBarButtonItems animated:NO];
-}
-
-- (UIBarButtonItem *)rightBarButtonItem {
-    return self.navigationItem.rightBarButtonItem;
-}
-
-- (void)setRightBarButtonItem:(UIBarButtonItem *)rightBarButtonItem {
-    [self.navigationItem setRightBarButtonItem:rightBarButtonItem animated:NO];
-}
-
-- (NSArray *)rightBarButtonItems {
-    return self.navigationItem.rightBarButtonItems;
-}
-
-- (void)setRightBarButtonItems:(NSArray *)rightBarButtonItems {
-    [self.navigationItem setRightBarButtonItems:rightBarButtonItems animated:NO];
-}
-
-- (NSString *)title {
-    return self.navigationItem.title;
-}
-
-- (void)setTitle:(NSString *)title {
-    self.navigationItem.title = title;
-}
-
-- (NSDictionary *)titleTextAttributes {
-    return self.navigationBar.titleTextAttributes;
-}
-
-- (void)setTitleTextAttributes:(NSDictionary *)titleTextAttributes {
-    self.navigationBar.titleTextAttributes = titleTextAttributes;
-}
-
-@end
