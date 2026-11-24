@@ -6,171 +6,207 @@
 //
 //
 
-@import NYTPhotoViewerSwift;
-#import "NYTPhotoCaptionView.h"
+import UIKit
 
-static const CGFloat NYTPhotoCaptionViewHorizontalMargin = 8.0;
-static const CGFloat NYTPhotoCaptionViewVerticalMargin = 7.0;
+/**
+ *  A view used to display the caption for a photo.
+ *
+ *  This is used by default when no custom caption view is provided.
+ */
+@objc(NYTPhotoCaptionView)
+public final class PhotoCaptionView: UIView, PhotoCaptionViewLayoutWidthHinting {
+    private static let horizontalMargin: CGFloat = 8.0
+    private static let vertialMargin: CGFloat = 7.0
 
-@interface NYTPhotoCaptionView ()
+    private let attributedTitle: NSAttributedString?
+    private let attributedSummary: NSAttributedString?
+    private let attributedCredit: NSAttributedString?
 
-- (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
+    private let textView = UITextView()
+    private let gradientLayer = CAGradientLayer()
 
-@property (nonatomic, readonly) NSAttributedString *attributedTitle;
-@property (nonatomic, readonly) NSAttributedString *attributedSummary;
-@property (nonatomic, readonly) NSAttributedString *attributedCredit;
+    // MARK: - UIView
 
-@property (nonatomic) UITextView *textView;
-@property (nonatomic) CAGradientLayer *gradientLayer;
-
-@end
-
-@implementation NYTPhotoCaptionView
-
-@synthesize preferredMaxLayoutWidth = _preferredMaxLayoutWidth;
-
-#pragma mark - UIView
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    return [self initWithAttributedTitle:nil attributedSummary:nil attributedCredit:nil];
-}
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-
-    if (self) {
-        [self commonInit];
+    public override convenience init(frame: CGRect) {
+        self.init(attributedTitle: nil, attributedSummary: nil, attributedCredit: nil)
     }
 
-    return self;
-}
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
-+ (BOOL)requiresConstraintBasedLayout {
-    return YES;
-}
+    public override class var requiresConstraintBasedLayout: Bool {
+        true
+    }
 
-- (void)didMoveToSuperview {
-    [super didMoveToSuperview];
+    public override func didMoveToSuperview() {
+        super.didMoveToSuperview()
 
-    NSLayoutConstraint *maxHeightConstraint = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationLessThanOrEqual toItem:self.superview attribute:NSLayoutAttributeHeight multiplier:0.3f constant:0.0f];
-    [self.superview addConstraint:maxHeightConstraint];
-}
+        let maxHeightConstraint = NSLayoutConstraint(
+            item: self,
+            attribute: .height,
+            relatedBy: .lessThanOrEqual,
+            toItem: superview,
+            attribute: .height,
+            multiplier: 0.3,
+            constant: 0,
+        )
+        superview?.addConstraint(maxHeightConstraint)
+    }
 
-- (void)layoutSubviews {
-    [super layoutSubviews];
+    public override func layoutSubviews() {
+        super.layoutSubviews()
 
-    void (^updateGradientFrame)(void) = ^{
-        if (@available(iOS 11.0, *)) {
-            UIEdgeInsets safeAreaInsets = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
-            CGRect selfBounds = self.layer.bounds;
-            self.gradientLayer.frame = CGRectMake(
-                                                  selfBounds.origin.x - safeAreaInsets.left,
-                                                  selfBounds.origin.y + safeAreaInsets.bottom,
-                                                  selfBounds.size.width + safeAreaInsets.left + safeAreaInsets.right,
-                                                  selfBounds.size.height + safeAreaInsets.bottom
-                                                  );
-        } else {
-            self.gradientLayer.frame = self.layer.bounds;
+        let safeAreaInsets = self.safeAreaInsets
+        let selfBounds = layer.bounds
+        gradientLayer.frame = CGRect(
+            x: selfBounds.origin.x - safeAreaInsets.left,
+            y: selfBounds.origin.y + safeAreaInsets.bottom,
+            width: selfBounds.size.width + safeAreaInsets.left + safeAreaInsets.right,
+            height: selfBounds.size.height + safeAreaInsets.bottom,
+        )
+    }
+
+    public override var intrinsicContentSize: CGSize {
+        let contentSize = textView.sizeThatFits(
+            CGSize(width: preferredMaxLayoutWidth, height: .greatestFiniteMagnitude)
+        )
+        let width = preferredMaxLayoutWidth
+        let height = ceil(contentSize.height)
+
+        return CGSize(width: width, height: height)
+    }
+
+    public var preferredMaxLayoutWidth: CGFloat = 0 {
+        didSet {
+            preferredMaxLayoutWidth = ceil(preferredMaxLayoutWidth)
+            if abs(oldValue - preferredMaxLayoutWidth) > 0.1 {
+                invalidateIntrinsicContentSize()
+            }
         }
-    };
-
-    updateGradientFrame();
-
-    // On iOS 8.x, when this view is height-constrained, neither `self.bounds` nor `self.layer.bounds` reflects the new layout height immediately after `[super layoutSubviews]`. Both of those properties appear correct in the next runloop.
-    // This problem doesn't affect iOS 9 and there may be a better solution; PRs welcome.
-    dispatch_async(dispatch_get_main_queue(), updateGradientFrame);
-}
-
-- (CGSize)intrinsicContentSize {
-    CGSize contentSize = [self.textView sizeThatFits:CGSizeMake(self.preferredMaxLayoutWidth, CGFLOAT_MAX)];
-    CGFloat width = (CGFloat)self.preferredMaxLayoutWidth;
-    CGFloat height = (CGFloat)ceil(contentSize.height);
-
-    return CGSizeMake(width, height);
-}
-
-- (void)setPreferredMaxLayoutWidth:(CGFloat)preferredMaxLayoutWidth {
-    preferredMaxLayoutWidth = (CGFloat)ceil(preferredMaxLayoutWidth);
-
-    if (ABS(_preferredMaxLayoutWidth - preferredMaxLayoutWidth) > 0.1) {
-        _preferredMaxLayoutWidth = preferredMaxLayoutWidth;
-        [self invalidateIntrinsicContentSize];
     }
-}
 
-#pragma mark - NYTPhotoCaptionView
+    // MARK: - NYTPhotoCaptionView
 
-- (instancetype)initWithAttributedTitle:(NSAttributedString *)attributedTitle attributedSummary:(NSAttributedString *)attributedSummary attributedCredit:(NSAttributedString *)attributedCredit {
-    self = [super initWithFrame:CGRectZero];
-    
-    if (self) {
-        _attributedTitle = [attributedTitle copy];
-        _attributedSummary = [attributedSummary copy];
-        _attributedCredit = [attributedCredit copy];
+    /**
+     *  Designated initializer that takes all the caption attributed strings as arguments.
+     *
+     *  @param attributedTitle   The attributed string used as the title.
+     *                           The top string in the caption view.
+     *  @param attributedSummary The attributed string used as the summary.
+     *                           The second from the top string in the caption view.
+     *  @param attributedCredit  The attributed string used as the credit.
+     *                           The third from the top string in the caption view.
+     */
+    @objc
+    public init(
+        attributedTitle: NSAttributedString?,
+        attributedSummary: NSAttributedString?,
+        attributedCredit: NSAttributedString?,
+    ) {
+        self.attributedTitle = attributedTitle
+        self.attributedSummary = attributedSummary
+        self.attributedCredit = attributedCredit
+        super.init(frame: .zero)
 
-        [self commonInit];
+        translatesAutoresizingMaskIntoConstraints = false
+
+        setupTextView()
+        updateTextViewAttributedText()
+        setupGradient()
     }
-    
-    return self;
-}
 
-- (void)commonInit {
-    self.translatesAutoresizingMaskIntoConstraints = NO;
+    private func setupTextView() {
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.isEditable = false
+        textView.dataDetectorTypes = []
+        textView.backgroundColor = .clear
+        textView.textContainerInset = UIEdgeInsets(
+            top: Self.vertialMargin,
+            left: Self.horizontalMargin,
+            bottom: Self.vertialMargin,
+            right: Self.horizontalMargin,
+        )
+        addSubview(textView)
 
-    [self setupTextView];
-    [self updateTextViewAttributedText];
-    [self setupGradient];
-}
-
-- (void)setupTextView {
-    self.textView = [[UITextView alloc] initWithFrame:CGRectZero textContainer:nil];
-    self.textView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.textView.editable = NO;
-    self.textView.dataDetectorTypes = UIDataDetectorTypeNone;
-    self.textView.backgroundColor = [UIColor clearColor];
-    self.textView.textContainerInset = UIEdgeInsetsMake(NYTPhotoCaptionViewVerticalMargin, NYTPhotoCaptionViewHorizontalMargin, NYTPhotoCaptionViewVerticalMargin, NYTPhotoCaptionViewHorizontalMargin);
-
-    [self addSubview:self.textView];
-    
-    NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.textView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
-    NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:self.textView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
-    NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:self.textView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeWidth multiplier:1.0 constant:0.0];
-    NSLayoutConstraint *horizontalPositionConstraint = [NSLayoutConstraint constraintWithItem:self.textView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];
-    
-    [self addConstraints:@[topConstraint, bottomConstraint, widthConstraint, horizontalPositionConstraint]];
-}
-
-- (void)setupGradient {
-    self.gradientLayer = [CAGradientLayer layer];
-    self.gradientLayer.frame = self.layer.bounds;
-    self.gradientLayer.colors = [NSArray arrayWithObjects:(id)[UIColor clearColor].CGColor, (id)[[UIColor blackColor] colorWithAlphaComponent:0.85].CGColor, nil];
-    [self.layer insertSublayer:self.gradientLayer atIndex:0];
-}
-
-- (void)updateTextViewAttributedText {
-    NSMutableAttributedString *attributedLabelText = [[NSMutableAttributedString alloc] init];
-    
-    if (self.attributedTitle) {
-        [attributedLabelText appendAttributedString:self.attributedTitle];
+        let topConstraint = NSLayoutConstraint(
+            item: textView,
+            attribute: .top,
+            relatedBy: .equal,
+            toItem: self,
+            attribute: .top,
+            multiplier: 1,
+            constant: 0,
+        )
+        let bottomConstraint = NSLayoutConstraint(
+            item: textView,
+            attribute: .bottom,
+            relatedBy: .equal,
+            toItem: self,
+            attribute: .bottom,
+            multiplier: 1,
+            constant: 0,
+        )
+        let widthConstraint = NSLayoutConstraint(
+            item: textView,
+            attribute: .width,
+            relatedBy: .equal,
+            toItem: self,
+            attribute: .width,
+            multiplier: 1,
+            constant: 0,
+        )
+        let horizontalPositionConstraint = NSLayoutConstraint(
+            item: textView,
+            attribute: .centerX,
+            relatedBy: .equal,
+            toItem: self,
+            attribute: .centerX,
+            multiplier: 1,
+            constant: 0,
+        )
+        addConstraints(
+            [
+                topConstraint,
+                bottomConstraint,
+                widthConstraint,
+                horizontalPositionConstraint,
+            ]
+        )
     }
-    
-    if (self.attributedSummary) {
-        if (self.attributedTitle) {
-            [attributedLabelText appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
+
+    private func setupGradient() {
+        gradientLayer.frame = layer.bounds
+        gradientLayer.colors = [
+            UIColor.clear.cgColor,
+            UIColor.black.withAlphaComponent(0.85).cgColor,
+        ]
+        layer.insertSublayer(gradientLayer, at: 0)
+    }
+
+    private func updateTextViewAttributedText() {
+        let attributedLabelText = NSMutableAttributedString()
+
+        if let attributedTitle {
+            attributedLabelText.append(attributedTitle)
         }
-        
-        [attributedLabelText appendAttributedString:self.attributedSummary];
-    }
-    
-    if (self.attributedCredit) {
-        if (self.attributedTitle || self.attributedSummary) {
-            [attributedLabelText appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
-        }
-        
-        [attributedLabelText appendAttributedString:self.attributedCredit];
-    }
-    
-    self.textView.attributedText = attributedLabelText;
-}
 
-@end
+        if let attributedSummary {
+            if attributedTitle != nil {
+                attributedLabelText.append(NSAttributedString(string: "\n"))
+            }
+
+            attributedLabelText.append(attributedSummary)
+        }
+
+        if let attributedCredit {
+            if attributedTitle != nil || attributedSummary != nil {
+                attributedLabelText.append(NSAttributedString(string: "\n"))
+            }
+
+            attributedLabelText.append(attributedCredit)
+        }
+
+        textView.attributedText = attributedLabelText
+    }
+}
