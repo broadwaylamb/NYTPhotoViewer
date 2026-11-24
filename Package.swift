@@ -26,6 +26,7 @@ let package = Package(
                 "PhotoCaptionViewLayoutWidthHinting.swift",
                 "PhotosOverlayView.swift",
                 "PhotoCaptionView.swift",
+                "PhotoDismissalInteractionController.swift",
             ],
         ),
         .target(
@@ -43,6 +44,7 @@ let package = Package(
                 "PhotoCaptionViewLayoutWidthHinting.swift",
                 "PhotosOverlayView.swift",
                 "PhotoCaptionView.swift",
+                "PhotoDismissalInteractionController.swift",
             ],
             resources: [
                 .process("Media.xcassets"),
