@@ -8,7 +8,7 @@
 
 #import "NYTPhotoTransitionController.h"
 #import "NYTPhotoTransitionAnimator.h"
-#import "NYTPhotoDismissalInteractionController.h"
+@import NYTPhotoViewerSwift;
 
 @interface NYTPhotoTransitionController ()
 
