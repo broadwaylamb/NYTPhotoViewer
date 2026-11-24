@@ -67,21 +67,7 @@ open class ScalingImageView: UIScrollView {
         updateZoomScale()
     }
 
-    @available(*, deprecated)
-    @objc
-    public convenience init?(imageData: Data, frame: CGRect) {
-        guard let image = UIImage(data: imageData) else { return nil }
-        self.init(image: image, frame: frame)
-    }
-
     // MARK: - Setup
-
-    @available(*, deprecated)
-    @objc
-    open func updateImageData(_ imageData: Data) {
-        guard let image = UIImage(data: imageData) else { return }
-        updateImage(image)
-    }
 
     /**
      *  Updates the image in the image view and centers and zooms the new image.
