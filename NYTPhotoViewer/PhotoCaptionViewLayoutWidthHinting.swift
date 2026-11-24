@@ -1,5 +1,5 @@
 //
-//  NYTPhotoCaptionViewLayoutWidthHinting.h
+//  PhotoCaptionViewLayoutWidthHinting.swift
 //  NYTPhotoViewer
 //
 //  Created by Chris Dzombak on 10/30/15.
@@ -12,8 +12,7 @@ import UIKit
  *  Allows a view to opt-in to receiving a hint of its layout width.
  *  This aids in calculating an appropriate intrinsic content size.
  */
-@objc(NYTPhotoCaptionViewLayoutWidthHinting)
-public protocol PhotoCaptionViewLayoutWidthHinting: NSObjectProtocol {
+public protocol PhotoCaptionViewLayoutWidthHinting: AnyObject {
 
     /**
      *  The preferred maximum width, in points, of this caption view.
