@@ -8,7 +8,6 @@
 
 #import "NYTPhotosViewController.h"
 @import NYTPhotoViewerSwift;
-#import "NYTPhotoViewController.h"
 #import <LinkPresentation/LPLinkMetadata.h>
 
 NSString * const NYTPhotosViewControllerDidNavigateToPhotoNotification = @"NYTPhotosViewControllerDidNavigateToPhotoNotification";
@@ -364,7 +363,7 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtonImageInsets = {3, 0,
         return;
     }
 
-    [self.notificationCenter postNotificationName:NYTPhotoViewControllerPhotoImageUpdatedNotification object:photo];
+    [self.notificationCenter postNotificationName:[NYTPhotoViewController photoImageUpdatedNotification] object:photo];
 
     if ([self.currentlyDisplayedPhoto isEqual:photo]) {
         [self updateOverlayInformation];

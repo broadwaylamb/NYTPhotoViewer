@@ -25,7 +25,7 @@ public protocol NYTPhoto: NSObjectProtocol {
      *  better performance.
      *  See ``imageData``'s documentation for discussion.
      */
-    var image: UIImage? { get }
+    var image: UIImage? { get } // TODO: Make non-optional
 
 
     /**
@@ -39,7 +39,7 @@ public protocol NYTPhoto: NSObjectProtocol {
      *  will provide better performance. Therefore, it is recommended to return `nil` from
      *  this property unless this photo is an animated GIF.
      */
-    var imageData: Data? { get }
+    var imageData: Data? { get } // TODO: Remove this property
 
 
     /**

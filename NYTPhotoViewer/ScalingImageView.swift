@@ -54,7 +54,7 @@ open class ScalingImageView: UIScrollView {
      *  @param frame The frame of the view.
      */
     @objc
-    public init(image: UIImage, frame: CGRect) {
+    public init(image: UIImage?, frame: CGRect) {
         imageView = UIImageView(image: image)
         super.init(frame: frame)
         updateImage(image)
@@ -89,17 +89,16 @@ open class ScalingImageView: UIScrollView {
      *  @param image The new image to display in the image view.
      */
     @objc
-    open func updateImage(_ image: UIImage) {
+    open func updateImage(_ image: UIImage?) {
         // Remove any transform currently applied by the scroll view zooming.
         imageView.transform = .identity
         imageView.image = image
+        let imageSize = image?.size ?? .zero
         imageView.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: image.size.width,
-            height: image.size.height,
+            origin: .zero,
+            size: imageSize,
         )
-        contentSize = image.size
+        contentSize = imageSize
         updateZoomScale()
         centerScrollViewContents()
     }

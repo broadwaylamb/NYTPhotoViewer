@@ -1,208 +1,259 @@
 //
-//  NYTPhotoViewController.m
+//  PhotoViewController.swift
 //  NYTPhotoViewer
 //
 //  Created by Brian Capps on 2/11/15.
 //
 //
 
-#import "NYTPhotoViewController.h"
-@import NYTPhotoViewerSwift;
+import UIKit
 
-NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhotoViewControllerPhotoImageUpdatedNotification";
+@objc(NYTPhotoViewControllerDelegate)
+public protocol PhotoViewControllerDelegate: NSObjectProtocol {
 
-@interface NYTPhotoViewController () <UIScrollViewDelegate>
-
-@property (nonatomic, nullable) id <NYTPhoto> photo;
-@property (nonatomic, nullable) UIView *interstitialView;
-@property (nonatomic) NSInteger photoViewItemIndex;
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
-
-@property (nonatomic) NYTScalingImageView *scalingImageView;
-@property (nonatomic) UIView *loadingView;
-@property (nonatomic) NSNotificationCenter *notificationCenter;
-@property (nonatomic) UITapGestureRecognizer *doubleTapGestureRecognizer;
-@property (nonatomic) UILongPressGestureRecognizer *longPressGestureRecognizer;
-
-@end
-
-@implementation NYTPhotoViewController
-
-#pragma mark - NSObject
-
-- (void)dealloc {
-    _scalingImageView.delegate = nil;
-    
-    [_notificationCenter removeObserver:self];
+    /**
+     *  Called when a long press is recognized.
+     *
+     *  @param photoViewController        The ``PhotoViewController`` instance that sent
+     *                                    the delegate message.
+     *  @param longPressGestureRecognizer The long press gesture recognizer that
+     *                                    recognized the long press.
+     */
+    @objc
+    func photoViewController(
+        _ photoViewController: PhotoViewController,
+        didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
+    )
 }
 
-#pragma mark - UIViewController
-
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    return [self initWithPhoto:nil itemIndex:0 loadingView:nil notificationCenter:nil];
+extension PhotoViewControllerDelegate {
+    func photoViewController(
+        _ photoViewController: PhotoViewController,
+        didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
+    ) {}
 }
 
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
+/**
+ *  The view controller controlling the display of a single photo object.
+ */
+@objc(NYTPhotoViewController)
+public final class PhotoViewController: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
+    @objc
+    public static let photoImageUpdatedNotification =
+        Notification.Name("NYTPhotoViewControllerPhotoImageUpdatedNotification")
 
-    if (self) {
-        [self commonInitWithPhoto:nil itemIndex:0 loadingView:nil notificationCenter:nil];
+    public let photo: (any NYTPhoto)?
+    public var interstitialView: UIView?
+    public let photoViewItemIndex: Int
+
+    /**
+     *  The internal scaling image view used to display the photo.
+     */
+    @objc
+    public let scalingImageView: ScalingImageView
+
+    /**
+     *  The internal activity view shown while the image is loading.
+     */
+    public var loadingView: UIView?
+
+    private let notificationCenter: NotificationCenter?
+
+    /**
+     *  The gesture recognizer used to detect the double tap gesture used for zooming on
+     *  photos.
+     */
+    @objc
+    public private(set) lazy var doubleTapGestureRecognizer: UITapGestureRecognizer = {
+        let gr = UITapGestureRecognizer(
+            target: self,
+            action: #selector(didDoubleTap)
+        )
+        gr.numberOfTapsRequired = 2
+        return gr
+    }()
+
+    private lazy var longPressGestureRecognizer = UILongPressGestureRecognizer(
+        target: self,
+        action: #selector(didLongPress)
+    )
+
+    /**
+     *  The object that acts as the photo view controller's delegate.
+     */
+    @objc
+    public weak var delegate: (any PhotoViewControllerDelegate)?
+
+    deinit {
+        scalingImageView.delegate = nil
+        notificationCenter?.removeObserver(self)
     }
 
-    return self;
-}
+    // MARK: - UIViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    [self.notificationCenter addObserver:self selector:@selector(photoImageUpdatedWithNotification:) name:NYTPhotoViewControllerPhotoImageUpdatedNotification object:nil];
-    
-    self.scalingImageView.frame = self.view.bounds;
-    [self.view addSubview:self.scalingImageView];
-    
-    [self.view addSubview:self.loadingView];
-    [self.loadingView sizeToFit];
-    
-    [self.view addGestureRecognizer:self.doubleTapGestureRecognizer];
-    [self.view addGestureRecognizer:self.longPressGestureRecognizer];
-}
-
-- (void)viewWillLayoutSubviews {
-    [super viewWillLayoutSubviews];
-    
-    self.scalingImageView.frame = self.view.bounds;
-    
-    [self.loadingView sizeToFit];
-    self.loadingView.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
-}
-
-- (BOOL)prefersHomeIndicatorAutoHidden {
-    return YES;
-}
-
-#pragma mark - NYTPhotoViewController
-
-- (instancetype)initWithPhoto:(id <NYTPhoto>)photo itemIndex:(NSUInteger)itemIndex loadingView:(UIView *)loadingView notificationCenter:(NSNotificationCenter *)notificationCenter {
-    self = [super initWithNibName:nil bundle:nil];
-    
-    if (self) {
-        [self commonInitWithPhoto:photo itemIndex:itemIndex loadingView:loadingView notificationCenter:notificationCenter];
+    public override convenience init(
+        nibName nibNameOrNil: String?,
+        bundle nibBundleOrNil: Bundle?
+    ) {
+        self.init(photo: nil, itemIndex: 0, loadingView: nil, notificationCenter: nil)
     }
-    
-    return self;
-}
 
-- (void)commonInitWithPhoto:(id <NYTPhoto>)photo itemIndex:(NSUInteger)itemIndex loadingView:(UIView *)loadingView notificationCenter:(NSNotificationCenter *)notificationCenter {
-    _photo = photo;
-    _interstitialView = nil;
-    _photoViewItemIndex = itemIndex;
-    
-    if (photo.imageData) {
-        _scalingImageView = [[NYTScalingImageView alloc] initWithImageData:photo.imageData frame:CGRectZero];
+    required convenience init?(coder: NSCoder) {
+        self.init(photo: nil, itemIndex: 0, loadingView: nil, notificationCenter: nil)
     }
-    else {
-        UIImage *photoImage = photo.image ?: photo.placeholderImage;
-        _scalingImageView = [[NYTScalingImageView alloc] initWithImage:photoImage frame:CGRectZero];
-        
-        if (!photoImage) {
-            [self setupLoadingView:loadingView];
+
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+
+        notificationCenter?.addObserver(
+            self,
+            selector: #selector(photoImageUpdated(with:)),
+            name: Self.photoImageUpdatedNotification,
+            object: nil
+        )
+
+        scalingImageView.frame = view.bounds
+        view.addSubview(scalingImageView)
+
+        if let loadingView {
+            view.addSubview(loadingView)
+            loadingView.sizeToFit()
+        }
+
+        view.addGestureRecognizer(doubleTapGestureRecognizer)
+        view.addGestureRecognizer(longPressGestureRecognizer)
+    }
+
+    public override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+
+        scalingImageView.frame = view.bounds
+
+        if let loadingView {
+            loadingView.sizeToFit()
+            loadingView.center = CGPoint(x: view.bounds.midX, y: view.bounds.midY)
         }
     }
-    
-    _scalingImageView.delegate = self;
 
-    _notificationCenter = notificationCenter;
-
-    [self setupGestureRecognizers];
-}
-
-- (void)setupLoadingView:(UIView *)loadingView {
-    self.loadingView = loadingView;
-    if (!loadingView) {
-        UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
-        [activityIndicator startAnimating];
-        self.loadingView = activityIndicator;
+    public override var prefersHomeIndicatorAutoHidden: Bool {
+        true
     }
-}
 
-- (void)photoImageUpdatedWithNotification:(NSNotification *)notification {
-    id <NYTPhoto> photo = notification.object;
-    if ([photo conformsToProtocol:@protocol(NYTPhoto)] && [photo isEqual:self.photo]) {
-        [self updateImage:photo.image imageData:photo.imageData];
+    // MARK: - PhotoViewController
+
+    /**
+     *  The designated initializer that takes the photo and activity view.
+     *
+     *  @param photo              The photo object that this view controller manages.
+     *  @param itemIndex          The index of this view controller in the photo viewer
+     *                            collection.
+     *  @param loadingView        The view to display while the photo's image loads.
+     *                            This view will be hidden when the image loads.
+     *  @param notificationCenter The notification center on which to observe
+     *                            the ``photoImageUpdatedNotification``.
+     */
+    @objc
+    public init(
+        photo: (any NYTPhoto)?,
+        itemIndex: Int,
+        loadingView: UIView?,
+        notificationCenter: NotificationCenter?,
+    ) {
+        self.photo = photo
+        self.photoViewItemIndex = itemIndex
+
+        let photoImage = photo?.image ?? photo?.placeholderImage
+        scalingImageView = ScalingImageView(image: photoImage, frame: .zero)
+        self.loadingView = photoImage == nil ? Self.setupLoadingView(loadingView) : nil
+        self.notificationCenter = notificationCenter
+        super.init(nibName: nil, bundle: nil)
+        scalingImageView.delegate = self
     }
-}
 
-- (void)updateImage:(UIImage *)image imageData:(NSData *)imageData {
-    if (imageData) {
-        [self.scalingImageView updateImageData:imageData];
+    private static func setupLoadingView(_ customLoadingView: UIView?) -> UIView {
+        if let customLoadingView {
+            return customLoadingView
+        }
+        let activityIndicator = UIActivityIndicatorView(style: .medium)
+        activityIndicator.startAnimating()
+        return activityIndicator
     }
-    else {
-        [self.scalingImageView updateImage:image];
+
+    @objc
+    private func photoImageUpdated(with notification: Notification) {
+        // TODO: Use Swift equality instead of isEqual
+        if let photo = notification.object as? NYTPhoto, photo.isEqual(self.photo) {
+            updateImage(photo.image)
+        }
     }
-    
-    if (imageData || image) {
-        [self.loadingView removeFromSuperview];
-    } else {
-        [self.view addSubview:self.loadingView];
+
+    private func updateImage(_ image: UIImage?) {
+        scalingImageView.updateImage(image)
+        if image != nil {
+            loadingView?.removeFromSuperview()
+        } else if let loadingView {
+            view.addSubview(loadingView)
+        }
     }
-}
 
-#pragma mark - Gesture Recognizers
+    // MARK: - Gesture Recognizers
 
-- (void)setupGestureRecognizers {
-    self.doubleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didDoubleTapWithGestureRecognizer:)];
-    self.doubleTapGestureRecognizer.numberOfTapsRequired = 2;
-    
-    self.longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(didLongPressWithGestureRecognizer:)];
-}
+    @objc
+    private func didDoubleTap(with recognizer: UITapGestureRecognizer) {
+        let pointInView = recognizer.location(in: scalingImageView.imageView)
 
-- (void)didDoubleTapWithGestureRecognizer:(UITapGestureRecognizer *)recognizer {
-    CGPoint pointInView = [recognizer locationInView:self.scalingImageView.imageView];
-    
-    CGFloat newZoomScale = self.scalingImageView.maximumZoomScale;
+        var newZoomScale = scalingImageView.maximumZoomScale
 
-    if (self.scalingImageView.zoomScale >= self.scalingImageView.maximumZoomScale
-        || ABS(self.scalingImageView.zoomScale - self.scalingImageView.maximumZoomScale) <= 0.01) {
-        newZoomScale = self.scalingImageView.minimumZoomScale;
+        if scalingImageView.zoomScale >= scalingImageView.maximumZoomScale
+            || abs(scalingImageView.zoomScale - scalingImageView.maximumZoomScale) <= 0.01
+        {
+            newZoomScale = scalingImageView.minimumZoomScale
+        }
+
+        let scrollViewSize = scalingImageView.bounds.size
+
+        let width = scrollViewSize.width / newZoomScale
+        let height = scrollViewSize.height / newZoomScale
+        let originX = pointInView.x - width / 2
+        let originY = pointInView.y - height / 2
+
+        let rectToZoomTo = CGRect(x: originX, y: originY, width: width, height: height)
+
+        scalingImageView.zoom(to: rectToZoomTo, animated: true)
     }
-    
-    CGSize scrollViewSize = self.scalingImageView.bounds.size;
-    
-    CGFloat width = scrollViewSize.width / newZoomScale;
-    CGFloat height = scrollViewSize.height / newZoomScale;
-    CGFloat originX = pointInView.x - (width / 2.0);
-    CGFloat originY = pointInView.y - (height / 2.0);
-    
-    CGRect rectToZoomTo = CGRectMake(originX, originY, width, height);
-    
-    [self.scalingImageView zoomToRect:rectToZoomTo animated:YES];
-}
 
-- (void)didLongPressWithGestureRecognizer:(UILongPressGestureRecognizer *)recognizer {
-    if ([self.delegate respondsToSelector:@selector(photoViewController:didLongPressWithGestureRecognizer:)]) {
-        if (recognizer.state == UIGestureRecognizerStateBegan) {
-            [self.delegate photoViewController:self didLongPressWithGestureRecognizer:recognizer];
+    @objc
+    private func didLongPress(with recognizer: UILongPressGestureRecognizer) {
+        if let delegate, recognizer.state == .began {
+            delegate
+                .photoViewController(self, didLongPressWithGestureRecognizer: recognizer)
+        }
+    }
+
+    // MARK: - UIScrollViewDelegate
+
+    public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        scalingImageView.imageView
+    }
+
+    public func scrollViewWillBeginZooming(
+        _ scrollView: UIScrollView,
+        with view: UIView?
+    ) {
+        scrollView.panGestureRecognizer.isEnabled = true
+    }
+
+    public func scrollViewDidEndZooming(
+        _ scrollView: UIScrollView,
+        with view: UIView?,
+        atScale scale: CGFloat
+    ) {
+        // There is a bug, especially prevalent on iPhone 6 Plus, that causes zooming to
+        // render all other gesture recognizers ineffective.
+        // This bug is fixed by disabling the pan gesture recognizer of the scroll view
+        // when it is not needed.
+        if scrollView.zoomScale == scrollView.minimumZoomScale {
+            scrollView.panGestureRecognizer.isEnabled = false
         }
     }
 }
-
-#pragma mark - UIScrollViewDelegate
-
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return self.scalingImageView.imageView;
-}
-
-- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view {
-    scrollView.panGestureRecognizer.enabled = YES;
-}
-
-- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(CGFloat)scale {
-    // There is a bug, especially prevalent on iPhone 6 Plus, that causes zooming to render all other gesture recognizers ineffective.
-    // This bug is fixed by disabling the pan gesture recognizer of the scroll view when it is not needed.
-    if (scrollView.zoomScale == scrollView.minimumZoomScale) {
-        scrollView.panGestureRecognizer.enabled = NO;
-    }
-}
-
-@end
