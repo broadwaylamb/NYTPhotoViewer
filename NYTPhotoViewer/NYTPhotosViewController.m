@@ -9,7 +9,6 @@
 #import "NYTPhotosViewController.h"
 @import NYTPhotoViewerSwift;
 #import "NYTPhotoViewController.h"
-#import "NYTPhotoTransitionController.h"
 #import <LinkPresentation/LPLinkMetadata.h>
 
 NSString * const NYTPhotosViewControllerDidNavigateToPhotoNotification = @"NYTPhotosViewControllerDidNavigateToPhotoNotification";
