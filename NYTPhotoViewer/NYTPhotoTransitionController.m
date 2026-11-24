@@ -7,7 +7,6 @@
 //
 
 #import "NYTPhotoTransitionController.h"
-#import "NYTPhotoTransitionAnimator.h"
 @import NYTPhotoViewerSwift;
 
 @interface NYTPhotoTransitionController ()
@@ -58,13 +57,13 @@
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {
-    self.animator.dismissing = NO;
-    
+    self.animator.isDismissing = NO;
+
     return self.animator;
 }
 
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-    self.animator.dismissing = YES;
+    self.animator.isDismissing = YES;
     
     return self.animator;
 }

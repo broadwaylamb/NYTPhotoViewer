@@ -1,295 +1,379 @@
 //
-//  NYTPhotoTransitionAnimator.m
+//  PhotoTransitionAnimator.swift
 //  NYTPhotoViewer
 //
 //  Created by Brian Capps on 2/17/15.
 //
 //
 
-#import "NYTPhotoTransitionAnimator.h"
+import UIKit
 
-static const CGFloat NYTPhotoTransitionAnimatorDurationWithZooming = 0.5;
-static const CGFloat NYTPhotoTransitionAnimatorDurationWithoutZooming = 0.3;
-static const CGFloat NYTPhotoTransitionAnimatorBackgroundFadeDurationRatio = 4.0 / 9.0;
-static const CGFloat NYTPhotoTransitionAnimatorEndingViewFadeInDurationRatio = 0.1;
-static const CGFloat NYTPhotoTransitionAnimatorStartingViewFadeOutDurationRatio = 0.05;
-static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
+/**
+ *  An object that controls the animated transition of photo presentation and dismissal.
+ */
+@objc(NYTPhotoTransitionAnimator)
+public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
+    private static let durationWithZooming: CGFloat = 0.5
+    private static let durationWithoutZooming: CGFloat = 0.3
+    private static let backgroundFadeDurationRatio: CGFloat = 4.0 / 9.0
+    private static let endingViewFadeInDurationRatio: CGFloat = 0.1
+    private static let startingViewFadeOutDurationRatio: CGFloat = 0.05
+    private static let springDamping: CGFloat = 0.9
 
-@interface NYTPhotoTransitionAnimator ()
+    private weak var toViewController: UIViewController?
+    private weak var fromViewController: UIViewController?
 
-@property (nonatomic, readonly) BOOL shouldPerformZoomingAnimation;
-@property (nonatomic, weak) UIViewController *toViewController;
-@property (nonatomic, weak) UIViewController *fromViewController;
+    /**
+     *  The view from which to start an image zooming transition.
+     *  This view may be hidden or shown in the transition, but will never be removed or
+     *  changed in its view hierarchy.
+     */
+    @objc
+    public var startingView: UIView?
 
-@end
+    /**
+     *  The view from which to end an image zooming transition.
+     *  This view may be hidden or shown in the transition, but will never be removed or
+     *  changed in its view hierarchy.
+     */
+    @objc
+    public var endingView: UIView?
 
-@implementation NYTPhotoTransitionAnimator
+    /**
+     *  The view that is used for animating the starting view.
+     *  If no view is set, the starting view is screenshotted and the relevant properties
+     *  are copied to the new view.
+     */
+    @objc
+    public var startingViewForAnimation: UIView?
 
-#pragma mark - NSObject
+    /**
+     *  The view that is used for animating the ending view.
+     *  If no view is set, the ending view is screenshotted and relevant properties copied
+     *  to the new view.
+     */
+    @objc
+    public var endingViewForAnimation: UIView?
 
-- (instancetype)init {
-    self = [super init];
-    
-    if (self) {
-        _animationDurationWithZooming = NYTPhotoTransitionAnimatorDurationWithZooming;
-        _animationDurationWithoutZooming = NYTPhotoTransitionAnimatorDurationWithoutZooming;
-        _animationDurationFadeRatio = NYTPhotoTransitionAnimatorBackgroundFadeDurationRatio;
-        _animationDurationEndingViewFadeInRatio = NYTPhotoTransitionAnimatorEndingViewFadeInDurationRatio;
-        _animationDurationStartingViewFadeOutRatio = NYTPhotoTransitionAnimatorStartingViewFadeOutDurationRatio;
-        _zoomingAnimationSpringDamping = NYTPhotoTransitionAnimatorSpringDamping;
-    }
-    
-    return self;
-}
+    /**
+     *  Whether this transition is a dismissal. If `false`, presentation is assumed.
+     */
+    @objc
+    public var isDismissing = false
 
-#pragma mark - NYTPhotoTransitionAnimator
+    /**
+     *  The duration of the animation when zooming is performed.
+     */
+    public var animationDurationWithZooming = durationWithZooming
 
-- (void)setupTransitionContainerHierarchyWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
-    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
+    /**
+     *  The duration of the animation when only fading and not zooming is performed.
+     */
+    public var animationDurationWithoutZooming = durationWithoutZooming
 
-    self.toViewController =  [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    self.fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    
-    toView.frame = [transitionContext finalFrameForViewController:self.toViewController];
-
-    if (self.toViewController.parentViewController) {
-        [self.toViewController beginAppearanceTransition:YES animated:YES];
-    }
-
-    if (self.fromViewController.parentViewController) {
-        [self.fromViewController beginAppearanceTransition:NO animated:YES];
-    }
-
-    if (![toView isDescendantOfView:transitionContext.containerView]) {
-        [transitionContext.containerView addSubview:toView];
-    }
-    
-    if (self.isDismissing) {
-        [transitionContext.containerView bringSubviewToFront:fromView];
-    }
-}
-
-- (void)setAnimationDurationFadeRatio:(CGFloat)animationDurationFadeRatio {
-    _animationDurationFadeRatio = MIN(animationDurationFadeRatio, 1.0);
-}
-
-- (void)setAnimationDurationEndingViewFadeInRatio:(CGFloat)animationDurationEndingViewFadeInRatio {
-    _animationDurationEndingViewFadeInRatio = MIN(animationDurationEndingViewFadeInRatio, 1.0);
-}
-
-- (void)setAnimationDurationStartingViewFadeOutRatio:(CGFloat)animationDurationStartingViewFadeOutRatio {
-    _animationDurationStartingViewFadeOutRatio = MIN(animationDurationStartingViewFadeOutRatio, 1.0);
-}
-
-#pragma mark - Fading
-
-- (void)performFadeAnimationWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
-    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    
-    UIView *viewToFade = toView;
-    CGFloat beginningAlpha = 0.0;
-    CGFloat endingAlpha = 1.0;
-    
-    if (self.isDismissing) {
-        viewToFade = fromView;
-        beginningAlpha = 1.0;
-        endingAlpha = 0.0;
-    }
-    
-    viewToFade.alpha = beginningAlpha;
-    
-    [UIView animateWithDuration:[self fadeDurationForTransitionContext:transitionContext] animations:^{
-        viewToFade.alpha = endingAlpha;
-    } completion:^(BOOL finished) {
-        if (!self.shouldPerformZoomingAnimation) {
-            [self completeTransitionWithTransitionContext:transitionContext];
+    /**
+     *  The ratio (from 0.0 to 1.0) of the total animation duration that the background
+     *  fade duration takes.
+     */
+    public var animationDurationFadeRatio = backgroundFadeDurationRatio {
+        didSet {
+            animationDurationFadeRatio = min(animationDurationFadeRatio, 1)
         }
-    }];
-}
-
-- (CGFloat)fadeDurationForTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if (self.shouldPerformZoomingAnimation) {
-        return [self transitionDuration:transitionContext] * self.animationDurationFadeRatio;
     }
-    
-    return [self transitionDuration:transitionContext];
-}
 
-#pragma mark - Zooming
-
-- (void)performZoomingAnimationWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
-    UIView *containerView = transitionContext.containerView;
-    
-    // Create a brand new view with the same contents for the purposes of animating this new view and leaving the old one alone.
-    UIView *startingViewForAnimation = self.startingViewForAnimation;
-    if (!startingViewForAnimation) {
-        startingViewForAnimation = [[self class] newAnimationViewFromView:self.startingView];
-    }
-    
-    UIView *endingViewForAnimation = self.endingViewForAnimation;
-    if (!endingViewForAnimation) {
-        endingViewForAnimation = [[self class] newAnimationViewFromView:self.endingView];
-    }
-    
-    CGAffineTransform finalEndingViewTransform = self.endingView.transform;
-
-    CGFloat endingViewInitialTransform = CGRectGetHeight(startingViewForAnimation.frame) / CGRectGetHeight(endingViewForAnimation.frame);
-    CGPoint translatedStartingViewCenter = [[self class] centerPointForView:self.startingView
-                                                  translatedToContainerView:containerView];
-    
-    startingViewForAnimation.center = translatedStartingViewCenter;
-    
-    endingViewForAnimation.transform = CGAffineTransformScale(endingViewForAnimation.transform, endingViewInitialTransform, endingViewInitialTransform);
-    endingViewForAnimation.center = translatedStartingViewCenter;
-    endingViewForAnimation.alpha = 0.0;
-    
-    [transitionContext.containerView addSubview:startingViewForAnimation];
-    [transitionContext.containerView addSubview:endingViewForAnimation];
-    
-    // Hide the original ending view and starting view until the completion of the animation.
-    self.endingView.alpha = 0.0;
-    self.startingView.alpha = 0.0;
-    
-    CGFloat fadeInDuration = [self transitionDuration:transitionContext] * self.animationDurationEndingViewFadeInRatio;
-    CGFloat fadeOutDuration = [self transitionDuration:transitionContext] * self.animationDurationStartingViewFadeOutRatio;
-    
-    // Ending view / starting view replacement animation
-    [UIView animateWithDuration:fadeInDuration
-                          delay:0
-                        options:UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState
-                     animations:^{
-                         endingViewForAnimation.alpha = 1.0;
-                     } completion:^(BOOL finished) {
-                         [UIView animateWithDuration:fadeOutDuration
-                                               delay:0
-                                             options:UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState
-                                          animations:^{
-                              startingViewForAnimation.alpha = 0.0;
-                          } completion:^(BOOL finished) {
-                              [startingViewForAnimation removeFromSuperview];
-                          }];
-                     }];
-    
-    CGFloat startingViewFinalTransform = 1.0 / endingViewInitialTransform;
-    CGPoint translatedEndingViewFinalCenter = [[self class] centerPointForView:self.endingView
-                                                     translatedToContainerView:containerView];
-    
-    // Zoom animation
-    [UIView animateWithDuration:[self transitionDuration:transitionContext]
-                          delay:0
-         usingSpringWithDamping:self.zoomingAnimationSpringDamping
-          initialSpringVelocity:0.0
-                        options:UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState
-                     animations:^{
-                         endingViewForAnimation.transform = finalEndingViewTransform;
-                         endingViewForAnimation.center = translatedEndingViewFinalCenter;
-                         startingViewForAnimation.transform = CGAffineTransformScale(startingViewForAnimation.transform, startingViewFinalTransform, startingViewFinalTransform);
-                         startingViewForAnimation.center = translatedEndingViewFinalCenter;
-                     }
-                     completion:^(BOOL finished) {
-                         [endingViewForAnimation removeFromSuperview];
-                         self.endingView.alpha = 1.0;
-                         self.startingView.alpha = 1.0;
-        
-                         [self completeTransitionWithTransitionContext:transitionContext];
-                     }];
-}
-
-#pragma mark - Convenience
-
-- (BOOL)shouldPerformZoomingAnimation {
-    return self.startingView && self.endingView;
-}
-
-- (void)completeTransitionWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if (transitionContext.isInteractive) {
-        if (transitionContext.transitionWasCancelled) {
-            [transitionContext cancelInteractiveTransition];
+    /**
+     *  The ratio (from 0.0 to 1.0) of the total animation duration that the ending view
+     *  fade in duration takes.
+     */
+    public var animationDurationEndingViewFadeInRatio = endingViewFadeInDurationRatio {
+        didSet {
+            animationDurationEndingViewFadeInRatio =
+                min(animationDurationEndingViewFadeInRatio, 1)
         }
+    }
+
+    /**
+     *  The ratio (from 0.0 to 1.0) of the total animation duration that the starting view
+     *  fade out duration takes after the ending view fade in completes.
+     */
+    public var animationDurationStartingViewFadeOutRatio = startingViewFadeOutDurationRatio {
+        didSet {
+            animationDurationStartingViewFadeOutRatio = max(animationDurationStartingViewFadeOutRatio, 1)
+        }
+    }
+
+    /**
+     *  The value passed as the spring damping argument to
+     *  `animateWithDuration:delay:usingSpringWithDamping:initialSpringVelocity:options:animations:completion:`
+     *  for the zooming animation.
+     */
+    public var zoomingAnimationSpringDamping = springDamping
+
+    // MARK: - PhotoTransitionAnimator
+
+    private func setupTransitionContainerHierarchy(
+        with transitionContext: any UIViewControllerContextTransitioning
+    ) {
+        guard let fromView = transitionContext.view(forKey: .from),
+              let toView = transitionContext.view(forKey: .to),
+              let toViewController = transitionContext.viewController(forKey: .to),
+              let fromViewController = transitionContext.viewController(forKey: .from)
         else {
-            [transitionContext finishInteractiveTransition];
+            return
+        }
+
+        self.toViewController = toViewController
+        self.fromViewController = fromViewController
+
+        toView.frame = transitionContext.finalFrame(for: toViewController)
+
+        if toViewController.parent != nil {
+            toViewController.beginAppearanceTransition(true, animated: true)
+        }
+
+        if fromViewController.parent != nil {
+            fromViewController.beginAppearanceTransition(false, animated: true)
+        }
+
+        if !toView.isDescendant(of: transitionContext.containerView) {
+            transitionContext.containerView.addSubview(toView)
+        }
+
+        if isDismissing {
+            transitionContext.containerView.bringSubviewToFront(fromView)
         }
     }
-    
-    [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
-}
 
-+ (CGPoint)centerPointForView:(UIView *)view translatedToContainerView:(UIView *)containerView {
-    CGPoint centerPoint = view.center;
-    
-    // Special case for zoomed scroll views.
-    if ([view.superview isKindOfClass:[UIScrollView class]]) {
-        UIScrollView *scrollView = (UIScrollView *)view.superview;
-        
-        if (scrollView.zoomScale != 1.0) {
-            centerPoint.x += (CGRectGetWidth(scrollView.bounds) - scrollView.contentSize.width) / 2.0 + scrollView.contentOffset.x;
-            centerPoint.y += (CGRectGetHeight(scrollView.bounds) - scrollView.contentSize.height) / 2.0 + scrollView.contentOffset.y;
-        }
-    }
-    
-    return [view.superview convertPoint:centerPoint toView:containerView];
-}
+    // MARK: - Fading
 
-+ (UIView *)newAnimationViewFromView:(UIView *)view {
-    if (!view) {
-        return nil;
-    }
-
-    UIView *animationView;
-    if (view.layer.contents) {
-        if ([view isKindOfClass:[UIImageView class]]) {
-            // The case of UIImageView is handled separately since the mere layer's contents (i.e. CGImage in this case) doesn't
-            // seem to contain proper informations about the image orientation for portrait images taken directly on the device.
-            // See https://github.com/NYTimes/NYTPhotoViewer/issues/115
-            animationView = [(UIImageView *)[[view class] alloc] initWithImage:((UIImageView *)view).image];
-            animationView.bounds = view.bounds;
-        }
+    private func performFadeAnimation(
+        with transitionContext: any UIViewControllerContextTransitioning
+    ) {
+        guard let fromView = transitionContext.view(forKey: .from),
+              let toView = transitionContext.view(forKey: .to)
         else {
-            animationView = [[UIView alloc] initWithFrame:view.frame];
-            animationView.layer.contents = view.layer.contents;
-            animationView.layer.bounds = view.layer.bounds;
+            return
         }
 
-        animationView.layer.cornerRadius = view.layer.cornerRadius;
-        animationView.layer.masksToBounds = view.layer.masksToBounds;
-        animationView.contentMode = view.contentMode;
-        animationView.transform = view.transform;
-    }
-    else {
-        animationView = [view snapshotViewAfterScreenUpdates:YES];
+        let viewToFade = isDismissing ? fromView : toView
+        let beginningAlpha: CGFloat = isDismissing ? 1 : 0
+        let endingAlpha: CGFloat = isDismissing ? 0 : 1
+
+        viewToFade.alpha = beginningAlpha
+
+        UIView.animate(withDuration: fadeDuration(for: transitionContext)) {
+            viewToFade.alpha = endingAlpha
+        } completion: { _ in
+            if !self.shouldPerformZoomingAnimation {
+                self.completeTransition(with: transitionContext)
+            }
+        }
     }
 
-    return animationView;
+    private func fadeDuration(
+        for transitionContext: any UIViewControllerContextTransitioning
+    ) -> CGFloat {
+        shouldPerformZoomingAnimation
+            ? transitionDuration(using: transitionContext) * animationDurationFadeRatio
+            : transitionDuration(using: transitionContext)
+    }
+
+    // MARK: - Zooming
+
+    private func performZoomingAnimation(
+        with transitionContext: any UIViewControllerContextTransitioning
+    ) {
+        guard let startingView, let endingView else { return }
+        let containerView = transitionContext.containerView
+
+        // Create a brand new view with the same contents for the purposes of animating
+        // this new view and leaving the old one alone.
+        guard let startingViewForAnimation = self.startingViewForAnimation
+                ?? Self.newAnimationView(fromView: startingView) else { return }
+
+        guard let endingViewForAnimation = self.endingViewForAnimation
+                ?? Self.newAnimationView(fromView: endingView) else { return }
+
+        let finalEndingViewTransform = endingView.transform
+
+        let endingViewInitialTransform =
+            startingViewForAnimation.frame.height / endingViewForAnimation.frame.height
+        let translatedStartingViewCenter =
+            Self.centerPoint(for: startingView, translatedTo: containerView)
+
+        startingViewForAnimation.center = translatedStartingViewCenter
+
+        endingViewForAnimation.transform = CGAffineTransformScale(
+            endingViewForAnimation.transform,
+            endingViewInitialTransform,
+            endingViewInitialTransform,
+        )
+        endingViewForAnimation.center = translatedStartingViewCenter
+        endingViewForAnimation.alpha = 0
+
+        containerView.addSubview(startingViewForAnimation)
+        containerView.addSubview(endingViewForAnimation)
+
+        // Hide the original ending view and starting view until the completion of
+        // the animation.
+        endingView.alpha = 0
+        startingView.alpha = 0
+
+        let fadeInDuration = transitionDuration(using: transitionContext)
+            * animationDurationEndingViewFadeInRatio
+        let fadeOutDuration = transitionDuration(using: transitionContext)
+            * animationDurationStartingViewFadeOutRatio
+
+        // Ending view / starting view replacement animation
+        UIView.animate(
+            withDuration: fadeInDuration,
+            delay: 0,
+            options: [.allowAnimatedContent, .beginFromCurrentState],
+        ) {
+            endingViewForAnimation.alpha = 1
+        } completion: { _ in
+            UIView.animate(
+                withDuration: fadeOutDuration,
+                delay: 0,
+                options: [.allowAnimatedContent, .beginFromCurrentState],
+            ) {
+                startingViewForAnimation.alpha = 0
+            } completion: { _ in
+                startingViewForAnimation.removeFromSuperview()
+            }
+        }
+
+        let startingViewFinalTransform = 1 / endingViewInitialTransform
+        let translatedEndingViewFinalCenter =
+            Self.centerPoint(for: endingView, translatedTo: containerView)
+
+        // Zoom animation
+        UIView.animate(
+            withDuration: transitionDuration(using: transitionContext),
+            delay: 0,
+            usingSpringWithDamping: zoomingAnimationSpringDamping,
+            initialSpringVelocity: 0,
+            options: [.allowAnimatedContent, .beginFromCurrentState],
+        ) {
+            endingViewForAnimation.transform = finalEndingViewTransform
+            endingViewForAnimation.center = translatedEndingViewFinalCenter
+            startingViewForAnimation.transform = CGAffineTransformScale(
+                startingViewForAnimation.transform,
+                startingViewFinalTransform,
+                startingViewFinalTransform,
+            )
+            startingViewForAnimation.center = translatedEndingViewFinalCenter
+        } completion: { _ in
+            endingView.alpha = 1
+            startingView.alpha = 1
+            self.completeTransition(with: transitionContext)
+        }
+    }
+
+    // MARK: - Convenience
+    private var shouldPerformZoomingAnimation: Bool {
+        startingView != nil && endingView != nil
+    }
+
+    private func completeTransition(
+        with transitionContext: any UIViewControllerContextTransitioning
+    ) {
+        if transitionContext.isInteractive {
+            if transitionContext.transitionWasCancelled {
+                transitionContext.cancelInteractiveTransition()
+            } else {
+                transitionContext.finishInteractiveTransition()
+            }
+        }
+        transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+    }
+
+    private static func centerPoint(
+        for view: UIView,
+        translatedTo containerView: UIView
+    ) -> CGPoint {
+        var centerPoint = view.center
+
+        // Special case for zoomed scroll views.
+        if let scrollView = view.superview as? UIScrollView, scrollView.zoomScale != 1 {
+            centerPoint.x += (scrollView.bounds.width - scrollView.contentSize.width) / 2
+            centerPoint.x += scrollView.contentOffset.x
+
+            centerPoint.y += (scrollView.bounds.height - scrollView.contentSize.height) / 2
+            centerPoint.y += scrollView.contentOffset.y
+        }
+
+        return view.superview?.convert(centerPoint, to: containerView) ?? centerPoint
+    }
+
+    /**
+     *  Convenience method for creating a view for animation from another arbitrary view.
+     *  Attempts to create an identical view in the most efficient way possible.
+     *  Returns `nil` if the passed-in view is `nil`.
+     *
+     *  @param view The view from which to create the animation.
+     *
+     *  @return A new view identical in appearance to the passed-in view, with relevant
+     *  properties transferred. Not a member of any view hierarchy.
+     *  Return `nil` if the passed-in view is `nil`.
+     */
+    @objc
+    public static func newAnimationView(fromView view: UIView?) -> UIView? {
+        guard let view else { return nil }
+
+        if let contents = view.layer.contents {
+            let animationView: UIView
+            if let imageView = view as? UIImageView {
+                // The case of UIImageView is handled separately since the mere layer's
+                // contents (i.e. CGImage in this case) doesn't
+                // seem to contain proper informations about the image orientation for
+                // portrait images taken directly on the device.
+                // See https://github.com/NYTimes/NYTPhotoViewer/issues/115
+                animationView = UIImageView(image: imageView.image)
+                animationView.bounds = view.bounds
+            } else {
+                animationView = UIView(frame: view.frame)
+                animationView.layer.contents = contents
+                animationView.layer.bounds = view.layer.bounds
+            }
+
+            animationView.layer.cornerRadius = view.layer.cornerRadius
+            animationView.layer.masksToBounds = view.layer.masksToBounds
+            animationView.contentMode = view.contentMode
+            animationView.transform = view.transform
+
+            return animationView
+        } else {
+            return view.snapshotView(afterScreenUpdates: true)
+        }
+    }
+
+    // MARK: - UIViewControllerAnimatedTransitioning
+
+    public func animationEnded(_ transitionCompleted: Bool) {
+        if let toViewController, toViewController.parent != nil {
+            toViewController.endAppearanceTransition()
+        }
+        if let fromViewController, fromViewController.parent != nil {
+            fromViewController.endAppearanceTransition()
+        }
+    }
+
+    public func transitionDuration(
+        using transitionContext: (any UIViewControllerContextTransitioning)?
+    ) -> TimeInterval {
+        shouldPerformZoomingAnimation
+            ? animationDurationWithZooming
+            : animationDurationWithoutZooming
+    }
+
+    public func animateTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
+        setupTransitionContainerHierarchy(with: transitionContext)
+        performFadeAnimation(with: transitionContext)
+        if shouldPerformZoomingAnimation {
+            performZoomingAnimation(with: transitionContext)
+        }
+    }
 }
-
-#pragma mark - UIViewControllerAnimatedTransitioning
-- (void)animationEnded:(BOOL)transitionCompleted {
-    if (self.toViewController.parentViewController) {
-        [self.toViewController endAppearanceTransition];
-    }
-    if (self.fromViewController.parentViewController) {
-        [self.fromViewController endAppearanceTransition];
-    }
-}
-
-- (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if (self.shouldPerformZoomingAnimation) {
-        return self.animationDurationWithZooming;
-    }
-    
-    return self.animationDurationWithoutZooming;
-}
-
-- (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    [self setupTransitionContainerHierarchyWithTransitionContext:transitionContext];
-    
-    [self performFadeAnimationWithTransitionContext:transitionContext];
-    
-    if (self.shouldPerformZoomingAnimation) {
-        [self performZoomingAnimationWithTransitionContext:transitionContext];
-    }
-}
-
-@end
