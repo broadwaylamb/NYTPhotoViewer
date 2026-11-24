@@ -27,6 +27,7 @@ let package = Package(
                 "PhotosOverlayView.swift",
                 "PhotoCaptionView.swift",
                 "PhotoDismissalInteractionController.swift",
+                "PhotoTransitionAnimator.swift",
             ],
         ),
         .target(
@@ -45,6 +46,7 @@ let package = Package(
                 "PhotosOverlayView.swift",
                 "PhotoCaptionView.swift",
                 "PhotoDismissalInteractionController.swift",
+                "PhotoTransitionAnimator.swift",
             ],
             resources: [
                 .process("Media.xcassets"),
