@@ -86,7 +86,7 @@ public final class ScalingImageView: UIScrollView {
     }
 
     private func updateZoomScale() {
-        let imageSize = imageView.image!.size
+        guard let imageSize = imageView.image?.size else { return }
         let scrollViewFrame = bounds
 
         let scaleWidth = scrollViewFrame.size.width / imageSize.width

@@ -10,25 +10,16 @@ import NYTPhotoViewer
 import NYTPhotoViewerSwift
 import UIKit
 
-final class ViewController: UIViewController, @MainActor NYTPhotosViewControllerDelegate {
+final class ViewController: UIViewController, PhotosViewControllerDelegate {
     @IBOutlet var imageButton: UIButton!
-    private var dataSource: NYTPhotoViewerArrayDataSource!
-
-    enum PhotoIndex: Int, CaseIterable {
-        case `default` = 0
-        case customEverything
-        case longCaption
-        case defaultLoadingSpinner
-        case noReferenceView
-        case customMaxZoomScale
-    }
+    private var dataSource: PhotoViewerArrayDataSource<ExamplePhoto>?
 
     @IBAction func imageButtonTapped(_ sender: Any?) {
-        dataSource = Self.newTimesBuildingDataSource()
+        let dataSource = Self.newTimesBuildingDataSource()
+        self.dataSource = dataSource
 
-        let photosViewController = NYTPhotosViewController(
+        let photosViewController = PhotosViewController(
             dataSource: dataSource,
-            initialPhoto: nil,
             delegate: self,
         )
 
@@ -42,26 +33,25 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
     }
 
     private func updateImages(
-        on photosViewController: NYTPhotosViewController,
-        afterDelayWith dataSource: NYTPhotoViewerArrayDataSource,
+        on photosViewController: PhotosViewController<ExamplePhoto>,
+        afterDelayWith dataSource: PhotoViewerArrayDataSource<ExamplePhoto>,
     ) {
-        if dataSource != self.dataSource {
+        if dataSource !== self.dataSource {
             return
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
-            for photo in dataSource.photos {
-                let photo = photo as! ExamplePhoto
-                if photo.image == nil && photo.imageData == nil {
-                    photo.image = UIImage(resource: .nyTimesBuilding)
-                    photo.attributedCaptionSummary = NSAttributedString(
+            for i in dataSource.photos.indices {
+                if case .placeholder = dataSource.photos[i].state {
+                    dataSource.photos[i].state = .loaded(UIImage(resource: .nyTimesBuilding))
+                    dataSource.photos[i].attributedCaptionSummary = NSAttributedString(
                         string: "Photo which previously had a loading spinner (to see the spinner, reopen the photo viewer and scroll to this photo)",
                         attributes: [
                             .foregroundColor : UIColor.white,
                             .font : UIFont.preferredFont(forTextStyle: .body),
                         ]
                     )
-                    photosViewController.update(photo)
+                    photosViewController.updatePhoto(atIndex: i)
                 }
             }
         }
@@ -69,15 +59,15 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
 
     // This method simulates completely swapping out the data source, after 10 seconds.
     private func switchDataSource(
-        on photosViewController: NYTPhotosViewController,
-        afterDelayWith dataSource: NYTPhotoViewerArrayDataSource,
+        on photosViewController: PhotosViewController<ExamplePhoto>,
+        afterDelayWith dataSource: PhotoViewerArrayDataSource<ExamplePhoto>,
     ) {
-        if dataSource != self.dataSource {
+        if dataSource !== self.dataSource {
             return
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10)) {
-            let photoWithLongCaption = dataSource[UInt(PhotoIndex.longCaption.rawValue)] as! ExamplePhoto
+            let photoWithLongCaption = dataSource[.longCaption]!
             photosViewController.delegate = nil // delegate methods in this VC are intended for use with the TimesBuildingDataSource
             self.dataSource = Self.newVariedDataSource(including: photoWithLongCaption)
             photosViewController.dataSource = self.dataSource
@@ -85,13 +75,13 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
         }
     }
 
-    // MARK: - NYTPhotosViewControllerDelegate
+    // MARK: - PhotosViewController<ExamplePhoto>Delegate
 
     func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        referenceViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        referenceViewFor photo: ExamplePhoto
     ) -> UIView? {
-        if photo.isEqual(dataSource.photos[PhotoIndex.noReferenceView.rawValue]) {
+        if photo == dataSource?[.noReferenceView] {
             return nil
         }
 
@@ -99,10 +89,10 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
     }
 
     func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        loadingViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        loadingViewFor photo: ExamplePhoto
     ) -> UIView? {
-        if photo.isEqual(dataSource.photos[PhotoIndex.customEverything.rawValue]) {
+        if photo == dataSource?[.customEverything] {
             let loadingLabel = UILabel()
             loadingLabel.text = "Custom Loading..."
             loadingLabel.textColor = .white
@@ -113,10 +103,10 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
     }
 
     func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        captionViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        captionViewFor photo: ExamplePhoto
     ) -> UIView? {
-        if photo.isEqual(dataSource.photos[PhotoIndex.customEverything.rawValue]) {
+        if photo == dataSource?[.customEverything] {
             let label = UILabel()
             label.text = "Custom Caption View"
             label.textColor = .white
@@ -128,64 +118,61 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
     }
 
     func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        maximumZoomScaleFor photo: any NYTPhoto
-    ) -> CGFloat {
-        if photo.isEqual(dataSource.photos[PhotoIndex.customEverything.rawValue]) {
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        maximumZoomScaleFor photo: ExamplePhoto
+    ) -> CGFloat? {
+        if photo == dataSource?[.customEverything] {
             return 0.5
-        }
-
-        return 1.0
-    }
-
-    func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        titleFor photo: any NYTPhoto,
-        at photoIndex: Int,
-        totalPhotoCount: NSNumber?
-    ) -> String? {
-        if photo.isEqual(dataSource.photos[PhotoIndex.customEverything.rawValue]) {
-            return "\(photoIndex + 1)/\(totalPhotoCount!.intValue)"
         }
 
         return nil
     }
 
     func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        didNavigateTo photo: any NYTPhoto,
-        at photoIndex: UInt
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        titleFor photo: ExamplePhoto,
+        atIndex photoIndex: Int,
+        totalPhotoCount: Int?
+    ) -> String? {
+        if photo == dataSource?[.customEverything] {
+            return "\(photoIndex + 1)/\(totalPhotoCount!)"
+        }
+
+        return nil
+    }
+
+    func photosViewController(
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        didNavigateTo photo: ExamplePhoto,
+        atIndex photoIndex: Int
     ) {
         print("Did Navigate To Photo: \(photo) identifier: \(photoIndex)")
     }
 
     func photosViewController(
-        _ photosViewController: NYTPhotosViewController,
-        actionCompletedWithActivityType activityType: UIActivity.ActivityType?
+        _ photosViewController: PhotosViewController<ExamplePhoto>,
+        actionCompletedWithActivityType activityType: UIActivity.ActivityType
     ) {
         print("Action Completed With Activity Type: \(String(describing: activityType))")
     }
 
-    func photosViewControllerDidDismiss(_ photosViewController: NYTPhotosViewController) {
+    func photosViewControllerDidDismiss(_ photosViewController: PhotosViewController<ExamplePhoto>) {
         print("Did Dismiss Photo Viewer: \(photosViewController)")
     }
 
     // MARK: - Sample Data Sources
 
-    private static func newTimesBuildingDataSource() -> NYTPhotoViewerArrayDataSource {
-        let photos = PhotoIndex.allCases.map { i in
-            let photo = ExamplePhoto()
-
-            if i == .customEverything || i == .defaultLoadingSpinner {
-                // no-op, left here for clarity:
-                photo.image = nil
-            } else {
-                photo.image = UIImage(resource: .nyTimesBuilding)
-            }
-
-            if i == .customEverything {
-                photo.placeholderImage = UIImage(resource: .nyTimesBuildingPlaceholder)
-            }
+    private static func newTimesBuildingDataSource() -> PhotoViewerArrayDataSource<ExamplePhoto> {
+        let photos = Photo.Index.allCases.map { i in
+            let state: PhotoState =
+                switch i {
+                case .customEverything:
+                    .placeholder(UIImage(resource: .nyTimesBuildingPlaceholder))
+                case .defaultLoadingSpinner:
+                    .none
+                default:
+                    .loaded(UIImage(resource: .nyTimesBuilding))
+                }
 
             let caption = switch i {
             case .default:
@@ -202,35 +189,34 @@ final class ViewController: UIViewController, @MainActor NYTPhotosViewController
                 "Photo with custom maximum zoom scale"
             }
 
-            photo.attributedCaptionTitle = attributedTitle(from: String(i.rawValue + 1))
-            photo.attributedCaptionSummary = attributedSummary(from: caption)
-            photo.attributedCaptionCredit = attributedCredit(from: "Photo: Nic Lehoux")
-
-            return photo
+            return ExamplePhoto(
+                index: i,
+                state: state,
+                attributedCaptionTitle: attributedTitle(from: String(i.rawValue + 1)),
+                attributedCaptionSummary: attributedSummary(from: caption),
+                attributedCaptionCredit: attributedCredit(from: "Photo: Nic Lehoux")
+            )
         }
 
-        return NYTPhotoViewerArrayDataSource(photos: photos)
+        return PhotoViewerArrayDataSource(photos: photos)
     }
 
     /// A second set of test photos, to demonstrate reloading the entire data source.
-    private static func newVariedDataSource(including: ExamplePhoto) -> NYTPhotoViewerArrayDataSource {
-        let photos: [ExamplePhoto] = [
-            {
-                let p = ExamplePhoto()
-                p.image = UIImage(resource: .chess)
-                p.attributedCaptionTitle = attributedTitle(from: "Chess")
-                p.attributedCaptionCredit = attributedCredit(from: "Photo: Chris Dzombak")
-                return p
-            }(),
-            {
-                let p = ExamplePhoto()
-                p.attributedCaptionTitle = nil
-                p.attributedCaptionSummary = attributedSummary(from: "This photo’s caption has changed in the data source.")
-                return p
-            }(),
+    private static func newVariedDataSource(including photo: ExamplePhoto) -> PhotoViewerArrayDataSource<ExamplePhoto> {
+        var photo = photo
+        photo.attributedCaptionTitle = nil
+        photo.attributedCaptionSummary = attributedSummary(from: "This photo’s caption has changed in the data source.")
+        let photos = [
+            ExamplePhoto(
+                index: .default,
+                state: .loaded(UIImage(resource: .chess)),
+                attributedCaptionTitle: attributedTitle(from: "Chess"),
+                attributedCaptionCredit: attributedCredit(from: "Photo: Chris Dzombak"),
+            ),
+            photo
         ]
 
-        return NYTPhotoViewerArrayDataSource(photos: photos)
+        return PhotoViewerArrayDataSource(photos: photos)
     }
 
     private static func attributedTitle(from caption: String) -> NSAttributedString {

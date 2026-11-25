@@ -453,7 +453,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
             dismiss(animated: true, userInitiated: true)
         } else {
             transitionController.forcesNonInteractiveDismissal = true
-            transitionController .didPan(
+            transitionController.didPan(
                 withPanGestureRecognizer: panGestureRecognizer,
                 viewToPan: pageViewController.view,
                 anchorPoint: boundsCenterPoint

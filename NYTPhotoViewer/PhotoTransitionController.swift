@@ -24,6 +24,7 @@ public final class PhotoTransitionController: NSObject, UIViewControllerTransiti
     public var forcesNonInteractiveDismissal = true
 
     // MARK: - PhotoTransitionController
+
     /**
      *  Call when new events are received from a `UIPanGestureRecognizer`.
      *  Internally passes off to interaction controller, which pans the appropriate view,

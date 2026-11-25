@@ -12,6 +12,7 @@ import UIKit
  *  A protocol of entirely optional methods called for view-related configuration and
  *  lifecycle events by an ``PhotosViewController`` instance.
  */
+@MainActor
 public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
 
     associatedtype Photo: PhotoProtocol
@@ -224,35 +225,35 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
 }
 
 extension PhotosViewControllerDelegate {
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         didNavigateTo photo: Photo,
         atIndex photoIndex: Int
     ) {}
 
-    func photosViewControllerWillDismiss(
+    public func photosViewControllerWillDismiss(
         _ photosViewController: PhotosViewController<Photo>
     ) {}
 
-    func photosViewControllerDidDismiss(
+    public func photosViewControllerDidDismiss(
         _ photosViewController: PhotosViewController<Photo>
     ) {}
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         captionViewFor photo: Photo
     ) -> UIView? {
         nil
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         captionViewRespectsSafeAreaFor photo: Photo
     ) -> Bool {
         true
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         titleFor photo: Photo,
         atIndex photoIndex: Int,
@@ -261,28 +262,28 @@ extension PhotosViewControllerDelegate {
         nil
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         loadingViewFor photo: Photo
     ) -> UIView? {
         nil
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         referenceViewFor photo: Photo
     ) -> UIView? {
         nil
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         maximumZoomScaleFor photo: Photo
     ) -> CGFloat? {
         nil
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         handleLongPressFor photo: Photo,
         withGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
@@ -290,14 +291,14 @@ extension PhotosViewControllerDelegate {
         false
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         handleActionButtonTappedFor photo: Photo
     ) -> Bool {
         false
     }
 
-    func photosViewController(
+    public func photosViewController(
         _ photosViewController: PhotosViewController<Photo>,
         actionCompletedWithActivityType activityType: UIActivity.ActivityType
     ) {}

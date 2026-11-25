@@ -258,6 +258,7 @@ public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTr
             )
             startingViewForAnimation.center = translatedEndingViewFinalCenter
         } completion: { _ in
+            endingViewForAnimation.removeFromSuperview()
             endingView.alpha = 1
             startingView.alpha = 1
             self.completeTransition(with: transitionContext)

@@ -10,11 +10,38 @@ import Foundation
 import NYTPhotoViewer
 import NYTPhotoViewerSwift
 
-final class ExamplePhoto: NSObject, NYTPhoto {
+struct ExamplePhoto: PhotoProtocol {
+    enum Index: Int, CaseIterable {
+        case `default` = 0
+        case customEverything
+        case longCaption
+        case defaultLoadingSpinner
+        case noReferenceView
+        case customMaxZoomScale
+    }
+    let index: Index
+
     // Redeclare all the properties as readwrite for sample/testing purposes.
-    var image: UIImage?
-    var placeholderImage: UIImage?
+    var state: PhotoState
     var attributedCaptionTitle: NSAttributedString?
     var attributedCaptionSummary: NSAttributedString?
     var attributedCaptionCredit: NSAttributedString?
+}
+
+extension ExamplePhoto: Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.index == rhs.index
+    }
+}
+
+extension ExamplePhoto: CustomStringConvertible {
+    var description: String {
+        "\(index)"
+    }
+}
+
+extension PhotoViewerDataSource<ExamplePhoto> {
+    subscript(index: ExamplePhoto.Index) -> ExamplePhoto? {
+        self[index.rawValue]
+    }
 }

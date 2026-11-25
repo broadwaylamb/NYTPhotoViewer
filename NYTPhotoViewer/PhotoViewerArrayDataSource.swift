@@ -14,7 +14,7 @@ import Foundation
  *  of images.
  */
 public final class PhotoViewerArrayDataSource<Photo: PhotoProtocol>: PhotoViewerDataSource {
-    public let photos: [Photo]
+    public var photos: [Photo]
 
     public init(photos: [Photo] = []) {
         self.photos = photos
