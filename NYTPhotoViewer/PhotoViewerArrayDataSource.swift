@@ -18,12 +18,12 @@ public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
     public let photos: [any NYTPhoto]
 
     @objc
-    public init(photos: [any NYTPhoto]) {
+    public init(photos: [any NYTPhoto] = []) {
         self.photos = photos
     }
 
-    public var numberOfPhotos: NSNumber? {
-        return photos.count as NSNumber
+    public var numberOfPhotos: Int? {
+        return photos.count
     }
 
     public subscript(photoIndex: Int) -> (any NYTPhoto)? {
@@ -34,8 +34,8 @@ public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
         return nil
     }
 
-    public func index(of photo: any NYTPhoto) -> Int {
+    public func index(of photo: any NYTPhoto) -> Int? {
         // TODO: Use Equatable
-        return photos.firstIndex { $0.isEqual(photo) } ?? NSNotFound
+        return photos.firstIndex { $0.isEqual(photo) }
     }
 }

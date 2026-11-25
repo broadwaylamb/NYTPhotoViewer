@@ -20,7 +20,7 @@ public final class PhotoViewerSinglePhotoDataSource: NSObject, PhotoViewerDataSo
         self.photo = photo
     }
 
-    public var numberOfPhotos: NSNumber? {
+    public var numberOfPhotos: Int? {
         return 1
     }
 
@@ -28,7 +28,7 @@ public final class PhotoViewerSinglePhotoDataSource: NSObject, PhotoViewerDataSo
         return photo
     }
 
-    public func index(of photo: any NYTPhoto) -> Int {
+    public func index(of photo: any NYTPhoto) -> Int? {
         return 0
     }
 }
