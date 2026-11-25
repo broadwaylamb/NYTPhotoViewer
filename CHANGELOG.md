@@ -1,3 +1,7 @@
+## [](https://github.com/nytimes/NYTPhotoViewer/releases/tag/5.0.8)
+## Unreleased
+- Rewritten in Swift 6, no longer supports Objective-C clients
+- Removed support for interstitial views
 ## [5.0.8](https://github.com/nytimes/NYTPhotoViewer/releases/tag/5.0.8)
 
 Changes for users of the library currently on `5.0.8`:
