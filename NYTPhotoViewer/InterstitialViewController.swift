@@ -11,9 +11,7 @@ import UIKit
 /**
  *  The view controller controlling the display of a interstitial view.
  */
-// TODO: Make this class internal
-@objc(NYTInterstitialViewController)
-public final class InterstitialViewController: UIViewController {
+internal final class InterstitialViewController: UIViewController {
     private var photo: (any NYTPhoto)?
     private let interstitialView: UIView?
     private var photoViewItemIndex: Int = 0
@@ -25,7 +23,6 @@ public final class InterstitialViewController: UIViewController {
      *  @param view      The view object that this view controller manages.
      *  @param itemIndex The index of this view controller in the photo viewer collection.
      */
-    @objc
     public init(view: UIView?, itemIndex: Int) {
         interstitialView = view
         photoViewItemIndex = itemIndex

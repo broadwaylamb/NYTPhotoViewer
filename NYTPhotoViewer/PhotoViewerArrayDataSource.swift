@@ -13,11 +13,9 @@ import Foundation
  *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with an array
  *  of images. Does not support interstitial views.
  */
-@objc(NYTPhotoViewerArrayDataSource)
 public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
     public let photos: [any NYTPhoto]
 
-    @objc
     public init(photos: [any NYTPhoto] = []) {
         self.photos = photos
     }

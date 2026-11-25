@@ -11,7 +11,6 @@ import UIKit
 /**
  *  An object that controls an interactive photo dismissal transition.
  */
-@objc(NYTPhotoDismissalInteractionController)
 public final class PhotoDismissalInteractionController: NSObject, UIViewControllerInteractiveTransitioning {
     private static let panDismissDistanceRatio: CGFloat = 50.0 / 667.0 // distance over iPhone 6 height.
     private static let panDismissMaximumDuration: CGFloat = 0.45
@@ -20,14 +19,12 @@ public final class PhotoDismissalInteractionController: NSObject, UIViewControll
     /**
      *  The animator object associated with the interactive transition.
      */
-    @objc
     public var animator: UIViewControllerAnimatedTransitioning?
 
     /**
      *  If set, this view will be hidden as soon as the interactive transition starts,
      *  and shown after it ends.
      */
-    @objc
     public var viewToHideWhenBeginningTransition: UIView?
 
     /**
@@ -35,7 +32,6 @@ public final class PhotoDismissalInteractionController: NSObject, UIViewControll
      *  constitutes a dismissal, the animator object should be used to finish
      *  the transition.
      */
-    @objc
     public var shouldAnimateUsingAnimator: Bool = false
 
     private var transitionContext: (any UIViewControllerContextTransitioning)?
@@ -56,7 +52,6 @@ public final class PhotoDismissalInteractionController: NSObject, UIViewControll
      *                              cancelled. Should be in the coordinates of the "from"
      *                              view controller's view on dismissal.
      */
-    @objc
     public func didPan(
         withPanGestureRecognizer panGestureRecognizer: UIPanGestureRecognizer,
         viewToPan: UIView,

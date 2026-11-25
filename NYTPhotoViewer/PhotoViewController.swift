@@ -8,8 +8,7 @@
 
 import UIKit
 
-@objc(NYTPhotoViewControllerDelegate)
-public protocol PhotoViewControllerDelegate: NSObjectProtocol {
+public protocol PhotoViewControllerDelegate: AnyObject {
 
     /**
      *  Called when a long press is recognized.
@@ -19,7 +18,6 @@ public protocol PhotoViewControllerDelegate: NSObjectProtocol {
      *  @param longPressGestureRecognizer The long press gesture recognizer that
      *                                    recognized the long press.
      */
-    @objc
     func photoViewController(
         _ photoViewController: PhotoViewController,
         didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
@@ -36,9 +34,7 @@ extension PhotoViewControllerDelegate {
 /**
  *  The view controller controlling the display of a single photo object.
  */
-@objc(NYTPhotoViewController)
 public final class PhotoViewController: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
-    @objc
     public static let photoImageUpdatedNotification =
         Notification.Name("NYTPhotoViewControllerPhotoImageUpdatedNotification")
 
@@ -49,7 +45,6 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
     /**
      *  The internal scaling image view used to display the photo.
      */
-    @objc
     public let scalingImageView: ScalingImageView
 
     /**
@@ -63,7 +58,6 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
      *  The gesture recognizer used to detect the double tap gesture used for zooming on
      *  photos.
      */
-    @objc
     public private(set) lazy var doubleTapGestureRecognizer: UITapGestureRecognizer = {
         let gr = UITapGestureRecognizer(
             target: self,
@@ -81,7 +75,6 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
     /**
      *  The object that acts as the photo view controller's delegate.
      */
-    @objc
     public weak var delegate: (any PhotoViewControllerDelegate)?
 
     deinit {
@@ -152,7 +145,6 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
      *  @param notificationCenter The notification center on which to observe
      *                            the ``photoImageUpdatedNotification``.
      */
-    @objc
     public init(
         photo: (any NYTPhoto)?,
         itemIndex: Int,

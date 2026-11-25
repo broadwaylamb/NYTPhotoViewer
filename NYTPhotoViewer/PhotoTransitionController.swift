@@ -1,5 +1,5 @@
 //
-//  NYTPhotoTransitionController.m
+//  PhotoTransitionController.swift
 //  NYTPhotoViewer
 //
 //  Created by Brian Capps on 2/13/15.
@@ -13,7 +13,6 @@ import UIKit
  *  acting as the transitioning delegate and internally coordinating multiple objects
  *  that do the animating and interactivity work.
  */
-@objc(NYTPhotoTransitionController)
 public final class PhotoTransitionController: NSObject, UIViewControllerTransitioningDelegate {
     private let animator = PhotoTransitionAnimator()
     private let interactionController = PhotoDismissalInteractionController()
@@ -22,7 +21,6 @@ public final class PhotoTransitionController: NSObject, UIViewControllerTransiti
      *  Forces the dismiss to animate, instead of the default behavior of being
      *  interactive.
      */
-    @objc
     public var forcesNonInteractiveDismissal = true
 
     // MARK: - PhotoTransitionController
@@ -40,7 +38,6 @@ public final class PhotoTransitionController: NSObject, UIViewControllerTransiti
      *                              cancelled. Should be in the coordinates of the "from"
      *                              view controller's view on dismissal.
      */
-    @objc
     public func didPan(
         withPanGestureRecognizer panGestureRecognizer: UIPanGestureRecognizer,
         viewToPan: UIView,
@@ -59,7 +56,6 @@ public final class PhotoTransitionController: NSObject, UIViewControllerTransiti
      *  or shown in the transition, but will never be removed or changed in its view
      *  hierarchy.
      */
-    @objc
     public var startingView: UIView? {
         get {
             animator.startingView
@@ -74,7 +70,6 @@ public final class PhotoTransitionController: NSObject, UIViewControllerTransiti
      *  shown in the transition, but will never be removed or changed in its view
      *  hierarchy.
      */
-    @objc
     public var endingView: UIView? {
         get {
             animator.endingView

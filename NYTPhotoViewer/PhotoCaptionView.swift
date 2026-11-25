@@ -13,7 +13,6 @@ import UIKit
  *
  *  This is used by default when no custom caption view is provided.
  */
-@objc(NYTPhotoCaptionView)
 public final class PhotoCaptionView: UIView, PhotoCaptionViewLayoutWidthHinting {
     private static let horizontalMargin: CGFloat = 8.0
     private static let vertialMargin: CGFloat = 7.0
@@ -98,7 +97,6 @@ public final class PhotoCaptionView: UIView, PhotoCaptionViewLayoutWidthHinting 
      *  @param attributedCredit  The attributed string used as the credit.
      *                           The third from the top string in the caption view.
      */
-    @objc
     public init(
         attributedTitle: NSAttributedString?,
         attributedSummary: NSAttributedString?,

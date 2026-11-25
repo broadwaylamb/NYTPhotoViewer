@@ -14,7 +14,6 @@ import UIKit
  *  Your models (or boxes, if working with Swift value types) should override `isEqual:`
  *  to provide a concept of identity for the PhotoViewer to work with.
  */
-@objc
 public protocol NYTPhoto: NSObjectProtocol {
 
     /**

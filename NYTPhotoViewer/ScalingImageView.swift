@@ -8,13 +8,11 @@
 
 import UIKit
 
-@objc(NYTScalingImageView)
-open class ScalingImageView: UIScrollView {
+public final class ScalingImageView: UIScrollView {
 
     /**s
      *  The image view used internally as the contents of the scroll view.
      */
-    @objc
     public let imageView: UIImageView
 
     // MARK: - UIView
@@ -27,12 +25,12 @@ open class ScalingImageView: UIScrollView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    open override func didAddSubview(_ subview: UIView) {
+    public override func didAddSubview(_ subview: UIView) {
         super.didAddSubview(subview)
         centerScrollViewContents()
     }
 
-    open override var frame: CGRect {
+    public override var frame: CGRect {
         get {
             super.frame
         }
@@ -53,7 +51,6 @@ open class ScalingImageView: UIScrollView {
      *  @param image A ``UIImage`` for zooming and panning.
      *  @param frame The frame of the view.
      */
-    @objc
     public init(image: UIImage?, frame: CGRect) {
         imageView = UIImageView(image: image)
         super.init(frame: frame)
@@ -74,8 +71,7 @@ open class ScalingImageView: UIScrollView {
      *
      *  @param image The new image to display in the image view.
      */
-    @objc
-    open func updateImage(_ image: UIImage?) {
+    public func updateImage(_ image: UIImage?) {
         // Remove any transform currently applied by the scroll view zooming.
         imageView.transform = .identity
         imageView.image = image
@@ -116,7 +112,7 @@ open class ScalingImageView: UIScrollView {
      *  Centers the image inside of the scroll view.
      *  Typically used after rotation, or when zooming has finished.
      */
-    open func centerScrollViewContents() {
+    public func centerScrollViewContents() {
         var horizontalInset: CGFloat = 0
         var verticalInset: CGFloat = 0
 

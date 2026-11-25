@@ -12,8 +12,7 @@ import UIKit
  *  A protocol that defines that an object contains a photo or interstitial view property
  *  and the index of the item in the collection.
  */
-@objc(NYTPhotoViewerContainer)
-public protocol PhotoViewerContainer: NSObjectProtocol {
+public protocol PhotoViewerContainer {
 
     /**
      *  An object conforming to the ``NYTPhoto`` protocol.

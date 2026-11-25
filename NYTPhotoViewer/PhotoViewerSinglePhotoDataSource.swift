@@ -12,7 +12,6 @@ import Foundation
  *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with a single
  *  image.
  */
-@objc(NYTPhotoViewerSinglePhotoDataSource)
 public final class PhotoViewerSinglePhotoDataSource: NSObject, PhotoViewerDataSource {
     public let photo: any NYTPhoto
 

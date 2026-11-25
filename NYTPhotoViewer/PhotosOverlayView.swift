@@ -12,7 +12,6 @@ import UIKit
  *  A view that overlays an ``NYTPhotosViewController``, and houses the left and right bar
  *  button items, a title, and a caption view.
  */
-@objc(NYTPhotosOverlayView)
 open class PhotosOverlayView: UIView {
 
     /**
@@ -26,7 +25,6 @@ open class PhotosOverlayView: UIView {
      *  locked to the bottom. Can be any `UIView` object, but is expected to respond to
      *  `intrinsicContentSize` appropriately to calculate height.
      */
-    @objc
     public var captionView: UIView? {
         willSet {
             willSetCaptionView(newValue)
@@ -36,7 +34,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  Whether the `captionView` should respect the safe area or not
      */
-    @objc
     public var captionViewRespectsSafeArea: Bool = false
 
     private var navigationItem = UINavigationItem(title: "")
@@ -160,7 +157,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  The bar button item appearing at the top left of the overlay.
      */
-    @objc
     public var leftBarButtonItem: UIBarButtonItem? {
         get {
             navigationItem.leftBarButtonItem
@@ -173,7 +169,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  The bar button items appearing at the top left of the overlay.
      */
-    @objc
     public var leftBarButtonItems: [UIBarButtonItem]? {
         get {
             navigationItem.leftBarButtonItems
@@ -186,7 +181,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  The bar button item appearing at the top right of the overlay.
      */
-    @objc
     public var rightBarButtonItem: UIBarButtonItem? {
         get {
             navigationItem.rightBarButtonItem
@@ -199,7 +193,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  The bar button items appearing at the top right of the overlay.
      */
-    @objc
     public var rightBarButtonItems: [UIBarButtonItem]? {
         get {
             navigationItem.rightBarButtonItems
@@ -212,7 +205,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  The title of the overlay. Centered between the left and right bar button items.
      */
-    @objc
     public var title: String? {
         get {
             navigationItem.title
@@ -225,7 +217,6 @@ open class PhotosOverlayView: UIView {
     /**
      *  The attributes of the overlay's title.
      */
-    @objc
     public var titleTextAttributes: [NSAttributedString.Key : Any]? {
         get {
             navigationBar.titleTextAttributes

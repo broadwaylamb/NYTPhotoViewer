@@ -11,7 +11,6 @@ import UIKit
 /**
  *  An object that controls the animated transition of photo presentation and dismissal.
  */
-@objc(NYTPhotoTransitionAnimator)
 public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     private static let durationWithZooming: CGFloat = 0.5
     private static let durationWithoutZooming: CGFloat = 0.3
@@ -28,7 +27,6 @@ public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTr
      *  This view may be hidden or shown in the transition, but will never be removed or
      *  changed in its view hierarchy.
      */
-    @objc
     public var startingView: UIView?
 
     /**
@@ -36,7 +34,6 @@ public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTr
      *  This view may be hidden or shown in the transition, but will never be removed or
      *  changed in its view hierarchy.
      */
-    @objc
     public var endingView: UIView?
 
     /**
@@ -44,7 +41,6 @@ public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTr
      *  If no view is set, the starting view is screenshotted and the relevant properties
      *  are copied to the new view.
      */
-    @objc
     public var startingViewForAnimation: UIView?
 
     /**
@@ -52,13 +48,11 @@ public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTr
      *  If no view is set, the ending view is screenshotted and relevant properties copied
      *  to the new view.
      */
-    @objc
     public var endingViewForAnimation: UIView?
 
     /**
      *  Whether this transition is a dismissal. If `false`, presentation is assumed.
      */
-    @objc
     public var isDismissing = false
 
     /**
@@ -317,7 +311,6 @@ public final class PhotoTransitionAnimator: NSObject, UIViewControllerAnimatedTr
      *  properties transferred. Not a member of any view hierarchy.
      *  Return `nil` if the passed-in view is `nil`.
      */
-    @objc
     public static func newAnimationView(fromView view: UIView?) -> UIView? {
         guard let view else { return nil }
 
