@@ -12,7 +12,6 @@ import UIKit
  *  The view controller controlling the display of a interstitial view.
  */
 internal final class InterstitialViewController: UIViewController {
-    private var photo: (any NYTPhoto)?
     private let interstitialView: UIView?
     private var photoViewItemIndex: Int = 0
     private var constraints: [NSLayoutConstraint] = []

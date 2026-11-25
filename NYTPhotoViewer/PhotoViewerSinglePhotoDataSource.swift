@@ -12,10 +12,10 @@ import Foundation
  *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with a single
  *  image.
  */
-public final class PhotoViewerSinglePhotoDataSource: NSObject, PhotoViewerDataSource {
-    public let photo: any NYTPhoto
+public final class PhotoViewerSinglePhotoDataSource<Photo: NYTPhoto>: PhotoViewerDataSource {
+    public let photo: Photo
 
-    public init(photo: any NYTPhoto) {
+    public init(photo: Photo) {
         self.photo = photo
     }
 
@@ -23,11 +23,11 @@ public final class PhotoViewerSinglePhotoDataSource: NSObject, PhotoViewerDataSo
         return 1
     }
 
-    public subscript(photoIndex: Int) -> (any NYTPhoto)? {
+    public subscript(photoIndex: Int) -> Photo? {
         return photo
     }
 
-    public func index(of photo: any NYTPhoto) -> Int? {
+    public func index(of photo: Photo) -> Int? {
         return 0
     }
 }

@@ -9,40 +9,17 @@
 import UIKit
 import LinkPresentation
 
-public final class PhotosViewController: UIViewController {
-
-    /**
-     *  Notification name issued when this ``PhotosViewController`` navigates to
-     *  a different photo.
-     *
-     *  Includes the ``PhotosViewController`` instance, as the notification's object.
-     */
-    public static let didNavigateToPhotoNotification =
-        Notification.Name("NYTPhotosViewControllerDidNavigateToPhotoNotification")
-
-    public static let didNavigateToInterstitialViewNotification =
-        Notification.Name("NYTPhotosViewControllerDidNavigateToInterstitialViewNotification")
-
-    /**
-     *  Notification name issued when this ``PhotosViewController`` is about to be dismissed.
-     *
-     *  Includes the ``PhotosViewController`` instance, as the notification's object.
-     */
-    public static let willDismissNotification =
-        Notification.Name("NYTPhotosViewControllerWillDismissNotification")
-
-    /**
-     *  Notification name issued when this ``PhotosViewController`` has been dismissed.
-     *
-     *  Includes the ``PhotosViewController`` instance, as the notification's object.
-     */
-    public static let didDismissNotification =
-        Notification.Name("NYTPhotosViewControllerDidDismissNotification")
-
-    private static let overlayAnimationDuration: CGFloat = 0.2
-    private static let interPhotoSpacing: CGFloat = 16
-    private static let closeButtonImageInsets =
+public final class PhotosViewController<Photo: NYTPhoto>
+    : UIViewController,
+      UIPageViewControllerDataSource,
+      UIPageViewControllerDelegate,
+      UIActivityItemSource
+{
+    private static var overlayAnimationDuration: CGFloat { 0.2 }
+    private static var interPhotoSpacing: CGFloat { 16 }
+    private static var closeButtonImageInsets: UIEdgeInsets {
         UIEdgeInsets(top: 3, left: 0, bottom: -3, right: 0)
+    }
 
     /**
      *  The internal page view controller used for swiping horizontally, photo to photo.
@@ -83,19 +60,19 @@ public final class PhotosViewController: UIViewController {
 
     private var overlayWasHiddenBeforeTransition = false
 
-    private var initialPhoto: (any NYTPhoto)?
+    private var initialPhoto: Photo?
 
     /**
      *  The data source underlying this ``PhotosViewController``.
      *
      *  After setting a new data source, you must call ``reloadPhotosAnimated``.
      */
-    public weak var dataSource: (any PhotoViewerDataSource)?
+    public weak var dataSource: (any PhotoViewerDataSource<Photo>)?
 
     /**
      *  The object that acts as the delegate of the ``PhotosViewController``.
      */
-    public weak var delegate: (any PhotosViewControllerDelegate)?
+    public weak var delegate: (any PhotosViewControllerDelegate<Photo>)?
 
     deinit {
         pageViewController.dataSource = nil
@@ -211,9 +188,9 @@ public final class PhotosViewController: UIViewController {
      *  @param delegate          The delegate for this ``PhotosViewController``.
      */
     public init(
-        dataSource: any PhotoViewerDataSource,
+        dataSource: any PhotoViewerDataSource<Photo>,
         initialPhotoIndex: Int = 0,
-        delegate: (any PhotosViewControllerDelegate)? = nil,
+        delegate: (any PhotosViewControllerDelegate<Photo>)? = nil,
     ) {
         self.dataSource = dataSource
         self.delegate = delegate
@@ -250,7 +227,7 @@ public final class PhotosViewController: UIViewController {
     private func configurePageViewControllerWithInitialPhoto() {
         guard let dataSource else { return }
 
-        let initialPhotoViewController: PhotoViewController? =
+        let initialPhotoViewController: PhotoViewController<Photo>? =
             if let initialPhoto,
                let initialPhotoIndex = dataSource.index(of: initialPhoto)
             {
@@ -403,7 +380,7 @@ public final class PhotosViewController: UIViewController {
      *  @param photo    The photo to make the currently displayed photo.
      *  @param animated Whether to animate the transition to the new photo.
      */
-    public func displayPhoto(_ photo: any NYTPhoto, animated: Bool) {
+    public func displayPhoto(_ photo: Photo, animated: Bool) {
         guard let indexOfPhoto = dataSource?.index(of: photo) else { return }
 
         let photoViewController = newPhotoViewController(
@@ -430,10 +407,9 @@ public final class PhotosViewController: UIViewController {
         guard let photo = dataSource?[photoIndex] else { return }
 
         notificationCenter
-            .post(name: PhotoViewController.photoImageUpdatedNotification, object: photo)
+            .post(name: .NYTPhotoViewer.photoImageUpdatedNotification, object: photo)
 
-        // TODO: Use Swift equality
-        if currentlyDisplayedPhoto?.isEqual(photo) == true {
+        if currentlyDisplayedPhoto == photo {
             updateOverlayInformation()
         }
     }
@@ -516,7 +492,8 @@ public final class PhotosViewController: UIViewController {
             delegate?.photosViewControllerWillDismiss(self)
         }
 
-        NotificationCenter.default.post(name: Self.willDismissNotification, object: self)
+        NotificationCenter.default
+            .post(name: .NYTPhotoViewer.willDismissNotification, object: self)
 
         super.dismiss(animated: animated) {
             let isStillOnscreen = self.view.window != nil // Happens when the dismissal is canceled.
@@ -531,7 +508,7 @@ public final class PhotosViewController: UIViewController {
                 }
 
                 NotificationCenter.default
-                    .post(name: Self.didDismissNotification, object: self)
+                    .post(name: .NYTPhotoViewer.didDismissNotification, object: self)
             }
 
             completion?()
@@ -541,13 +518,14 @@ public final class PhotosViewController: UIViewController {
     // MARK: - Convenience
 
     private func setCurrentlyDisplayedViewController(
-        _ viewController: UIViewController & PhotoViewerContainer,
+        _ viewController: any UIViewController & PhotoViewerContainer<Photo>,
         animated: Bool
     ) {
         var animated = animated
         if let photo = viewController.photo,
            let currentlyDisplayedPhoto,
-           photo.isEqual(currentlyDisplayedPhoto) { // TODO: Use Swift equality
+           photo == currentlyDisplayedPhoto
+        {
             animated = false
         }
 
@@ -594,9 +572,9 @@ public final class PhotosViewController: UIViewController {
     }
 
     private func newPhotoViewController(
-        for photo: any NYTPhoto,
+        for photo: Photo,
         atIndex index: Int
-    ) -> PhotoViewController {
+    ) -> PhotoViewController<Photo> {
         let loadingView = delegate?.photosViewController(self, loadingViewFor: photo)
 
         let photoViewController = PhotoViewController(
@@ -633,19 +611,20 @@ public final class PhotosViewController: UIViewController {
         return interstitialViewController
     }
 
-    private func didNavigate(to photo: any NYTPhoto, atIndex index: Int) {
+    private func didNavigate(to photo: Photo, atIndex index: Int) {
         delegate?.photosViewController(self, didNavigateTo: photo, atIndex: index)
         NotificationCenter
             .default
-            .post(name: Self.didNavigateToPhotoNotification, object: self)
+            .post(name: .NYTPhotoViewer.didNavigateToPhotoNotification, object: self)
     }
 
     private func didNavigate(toInterstitialView view: UIView, atIndex index: Int) {
         delegate?
             .photosViewController(self, didNavigateToInterstialView: view, atIndex: index)
-        NotificationCenter
-            .default
-            .post(name: Self.didNavigateToInterstitialViewNotification, object: self)
+        NotificationCenter.default.post(
+            name: .NYTPhotoViewer.didNavigateToInterstitialViewNotification,
+            object: self
+        )
     }
 
     /**
@@ -654,11 +633,11 @@ public final class PhotosViewController: UIViewController {
      *
      *  This photo will be one of the photos from the data source.
      */
-    public var currentlyDisplayedPhoto: (any NYTPhoto)? {
+    public var currentlyDisplayedPhoto: Photo? {
         currentPhotoViewController?.photo
     }
 
-    private var currentPhotoViewController: PhotoViewController? {
+    private var currentPhotoViewController: PhotoViewController<Photo>? {
         pageViewController.viewControllers?.first as? PhotoViewController
     }
 
@@ -676,36 +655,9 @@ public final class PhotosViewController: UIViewController {
         let numberOfInterstitialViews = dataSource?.numberOfInterstitialViews ?? 0
         return dataSource?.numberOfPhotos ?? 0 + numberOfInterstitialViews
     }
-}
 
-extension PhotosViewController: PhotoViewControllerDelegate {
-    public func photoViewController(
-        _ photoViewController: PhotoViewController,
-        didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
-    ) {
-        guard let photo = photoViewController.photo else { return }
-        shouldHandleLongPress = false
+    // MARK: - UIPageViewControllerDataSource
 
-        let clientDidHandle = delegate?.photosViewController(
-            self,
-            handleLongPressFor: photo,
-            withGestureRecognizer: longPressGestureRecognizer
-        ) ?? false
-
-        shouldHandleLongPress = !clientDidHandle
-
-        if shouldHandleLongPress, let grView = longPressGestureRecognizer.view {
-            let menuController = UIMenuController.shared
-            let targetRect = CGRect(
-                origin: longPressGestureRecognizer.location(in: grView),
-                size: .zero
-            )
-            menuController.showMenu(from: grView, rect: targetRect)
-        }
-    }
-}
-
-extension PhotosViewController: UIPageViewControllerDataSource {
     /// internal helper method for the following two delegate methods
     private func nextViewController(
         fromIndex startingIndex: Int,
@@ -733,7 +685,7 @@ extension PhotosViewController: UIPageViewControllerDataSource {
         _ pageViewController: UIPageViewController,
         viewControllerBefore viewController: UIViewController
     ) -> UIViewController? {
-        guard let viewController = viewController as? PhotoViewController else {
+        guard let viewController = viewController as? PhotoViewController<Photo> else {
             return nil
         }
         return nextViewController(
@@ -747,7 +699,7 @@ extension PhotosViewController: UIPageViewControllerDataSource {
         _ pageViewController: UIPageViewController,
         viewControllerAfter viewController: UIViewController
     ) -> UIViewController? {
-        guard let viewController = viewController as? PhotoViewController else {
+        guard let viewController = viewController as? PhotoViewController<Photo> else {
             return nil
         }
         return nextViewController(
@@ -756,9 +708,9 @@ extension PhotosViewController: UIPageViewControllerDataSource {
             stopBeforeIndex: totalItemCount
         )
     }
-}
 
-extension PhotosViewController: UIPageViewControllerDelegate {
+    // MARK: - UIPageViewControllerDelegate
+
     public func pageViewController(
         _ pageViewController: UIPageViewController,
         didFinishAnimating finished: Bool,
@@ -767,9 +719,7 @@ extension PhotosViewController: UIPageViewControllerDelegate {
     ) {
         guard completed else { return }
         updateOverlayInformation()
-        guard let viewController = pageViewController
-            .viewControllers?
-            .first as? UIViewController & PhotoViewerContainer else {
+        guard let viewController = currentPhotoViewController else {
             return
         }
         if let photo = viewController.photo {
@@ -781,10 +731,8 @@ extension PhotosViewController: UIPageViewControllerDelegate {
             )
         }
     }
-}
 
-extension PhotosViewController: UIActivityItemSource {
-    // MARK: protocol procedures to support sharesheet
+    // MARK: UIActivityItemSource protocol procedures to support sharesheet
 
     /// called to fetch data after an activity is selected. you can return nil.
     public func activityViewController(
@@ -809,5 +757,32 @@ extension PhotosViewController: UIActivityItemSource {
         let metaData = LPLinkMetadata()
         metaData.title = currentlyDisplayedPhoto?.attributedCaptionSummary?.string
         return metaData
+    }
+}
+
+extension PhotosViewController: PhotoViewControllerDelegate {
+    public func photoViewController(
+        _ photoViewController: PhotoViewController<Photo>,
+        didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
+    ) {
+        guard let photo = photoViewController.photo else { return }
+        shouldHandleLongPress = false
+
+        let clientDidHandle = delegate?.photosViewController(
+            self,
+            handleLongPressFor: photo,
+            withGestureRecognizer: longPressGestureRecognizer
+        ) ?? false
+
+        shouldHandleLongPress = !clientDidHandle
+
+        if shouldHandleLongPress, let grView = longPressGestureRecognizer.view {
+            let menuController = UIMenuController.shared
+            let targetRect = CGRect(
+                origin: longPressGestureRecognizer.location(in: grView),
+                size: .zero
+            )
+            menuController.showMenu(from: grView, rect: targetRect)
+        }
     }
 }

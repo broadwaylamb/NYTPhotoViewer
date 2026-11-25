@@ -12,7 +12,9 @@ import UIKit
  *  A protocol of entirely optional methods called for view-related configuration and
  *  lifecycle events by an ``PhotosViewController`` instance.
  */
-public protocol PhotosViewControllerDelegate: AnyObject {
+public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
+
+    associatedtype Photo: NYTPhoto
 
     /**
      *  Called when a new photo is displayed through a swipe gesture.
@@ -23,8 +25,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @param photoIndex           The index of the photo that was just displayed.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        didNavigateTo photo: any NYTPhoto,
+        _ photosViewController: PhotosViewController<Photo>,
+        didNavigateTo photo: Photo,
         atIndex photoIndex: Int
     )
 
@@ -37,7 +39,7 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @param index                The index of the view that was just displayed.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
+        _ photosViewController: PhotosViewController<Photo>,
         didNavigateToInterstialView view: UIView,
         atIndex index: Int
     )
@@ -51,7 +53,9 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @param photosViewController The ``PhotosViewController`` instance that sent
      *                              the delegate message.
      */
-    func photosViewControllerWillDismiss(_ photosViewController: PhotosViewController)
+    func photosViewControllerWillDismiss(
+        _ photosViewController: PhotosViewController<Photo>
+    )
 
     /**
      *  Called immediately after the photos view controller has been dismissed by
@@ -60,7 +64,9 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @param photosViewController The ``PhotosViewController`` instance that sent
      *  the delegate message.
      */
-    func photosViewControllerDidDismiss(_ photosViewController: PhotosViewController)
+    func photosViewControllerDidDismiss(
+        _ photosViewController: PhotosViewController<Photo>
+    )
 
     /**
      *  Returns a view to display over a photo, full width, locked to the bottom,
@@ -82,8 +88,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *          on the photo object.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        captionViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        captionViewFor photo: Photo
     ) -> UIView?
 
     /**
@@ -100,8 +106,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  for the given photo or not.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        captionViewRespectsSafeAreaFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        captionViewRespectsSafeAreaFor photo: Photo
     ) -> Bool
 
     /**
@@ -127,8 +133,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  a slideshow, or an empty string to hide this text entirely.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        titleFor photo: any NYTPhoto,
+        _ photosViewController: PhotosViewController<Photo>,
+        titleFor photo: Photo,
         atIndex photoIndex: Int,
         totalPhotoCount: Int?
     ) -> String?
@@ -148,8 +154,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  Return `nil` to show a default medium `UIActivityIndicatorView`.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        loadingViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        loadingViewFor photo: Photo
     ) -> UIView?
 
     /**
@@ -163,8 +169,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @return The view to animate out of or into for the given photo.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        referenceViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        referenceViewFor photo: Photo
     ) -> UIView?
 
     /**
@@ -179,8 +185,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @return The maximum zoom scale for the given photo.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        maximumZoomScaleFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        maximumZoomScaleFor photo: Photo
     ) -> CGFloat?
 
     /**
@@ -196,8 +202,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  `UIMenuController` with a Copy action is desired.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        handleLongPressFor photo: any NYTPhoto,
+        _ photosViewController: PhotosViewController<Photo>,
+        handleLongPressFor photo: Photo,
         withGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
     ) -> Bool
 
@@ -213,8 +219,8 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  the default `UIActivityViewController` is desired.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        handleActionButtonTappedFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        handleActionButtonTappedFor photo: Photo
     ) -> Bool
 
     /**
@@ -226,7 +232,7 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @param activityType         The activity type that was successfully shared.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
+        _ photosViewController: PhotosViewController<Photo>,
         actionCompletedWithActivityType activityType: UIActivity.ActivityType
     )
 
@@ -242,45 +248,49 @@ public protocol PhotosViewControllerDelegate: AnyObject {
      *  @return A `UIView`.
      */
     func photosViewController(
-        _ photosViewController: PhotosViewController,
+        _ photosViewController: PhotosViewController<Photo>,
         interstitialViewAtIndex index: Int
     ) -> UIView?
 }
 
 extension PhotosViewControllerDelegate {
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        didNavigateTo photo: any NYTPhoto,
+        _ photosViewController: PhotosViewController<Photo>,
+        didNavigateTo photo: Photo,
         atIndex photoIndex: Int
     ) {}
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
+        _ photosViewController: PhotosViewController<Photo>,
         didNavigateToInterstialView view: UIView,
         atIndex index: Int
     ) {}
 
-    func photosViewControllerWillDismiss(_ photosViewController: PhotosViewController) {}
+    func photosViewControllerWillDismiss(
+        _ photosViewController: PhotosViewController<Photo>
+    ) {}
 
-    func photosViewControllerDidDismiss(_ photosViewController: PhotosViewController) {}
+    func photosViewControllerDidDismiss(
+        _ photosViewController: PhotosViewController<Photo>
+    ) {}
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        captionViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        captionViewFor photo: Photo
     ) -> UIView? {
         nil
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        captionViewRespectsSafeAreaFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        captionViewRespectsSafeAreaFor photo: Photo
     ) -> Bool {
         true
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        titleFor photo: any NYTPhoto,
+        _ photosViewController: PhotosViewController<Photo>,
+        titleFor photo: Photo,
         atIndex photoIndex: Int,
         totalPhotoCount: Int?
     ) -> String? {
@@ -288,48 +298,48 @@ extension PhotosViewControllerDelegate {
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        loadingViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        loadingViewFor photo: Photo
     ) -> UIView? {
         nil
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        referenceViewFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        referenceViewFor photo: Photo
     ) -> UIView? {
         nil
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        maximumZoomScaleFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        maximumZoomScaleFor photo: Photo
     ) -> CGFloat? {
         nil
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        handleLongPressFor photo: any NYTPhoto,
+        _ photosViewController: PhotosViewController<Photo>,
+        handleLongPressFor photo: Photo,
         withGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
     ) -> Bool {
         false
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
-        handleActionButtonTappedFor photo: any NYTPhoto
+        _ photosViewController: PhotosViewController<Photo>,
+        handleActionButtonTappedFor photo: Photo
     ) -> Bool {
         false
     }
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
+        _ photosViewController: PhotosViewController<Photo>,
         actionCompletedWithActivityType activityType: UIActivity.ActivityType
     ) {}
 
     func photosViewController(
-        _ photosViewController: PhotosViewController,
+        _ photosViewController: PhotosViewController<Photo>,
         interstitialViewAtIndex index: Int
     ) -> UIView? {
         nil

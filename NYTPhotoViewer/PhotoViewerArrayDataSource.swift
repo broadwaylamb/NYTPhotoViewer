@@ -13,10 +13,10 @@ import Foundation
  *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with an array
  *  of images. Does not support interstitial views.
  */
-public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
-    public let photos: [any NYTPhoto]
+public final class PhotoViewerArrayDataSource<Photo: NYTPhoto>: PhotoViewerDataSource {
+    public let photos: [Photo]
 
-    public init(photos: [any NYTPhoto] = []) {
+    public init(photos: [Photo] = []) {
         self.photos = photos
     }
 
@@ -24,7 +24,7 @@ public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
         return photos.count
     }
 
-    public subscript(photoIndex: Int) -> (any NYTPhoto)? {
+    public subscript(photoIndex: Int) -> Photo? {
         if photoIndex < photos.count {
             return photos[photoIndex]
         }
@@ -32,8 +32,7 @@ public final class PhotoViewerArrayDataSource: NSObject, PhotoViewerDataSource {
         return nil
     }
 
-    public func index(of photo: any NYTPhoto) -> Int? {
-        // TODO: Use Equatable
-        return photos.firstIndex { $0.isEqual(photo) }
+    public func index(of photo: Photo) -> Int? {
+        photos.firstIndex(of: photo)
     }
 }

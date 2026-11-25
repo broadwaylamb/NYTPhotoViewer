@@ -8,7 +8,8 @@
 
 import UIKit
 
-public protocol PhotoViewControllerDelegate: AnyObject {
+public protocol PhotoViewControllerDelegate<Photo>: AnyObject {
+    associatedtype Photo: NYTPhoto
 
     /**
      *  Called when a long press is recognized.
@@ -19,14 +20,14 @@ public protocol PhotoViewControllerDelegate: AnyObject {
      *                                    recognized the long press.
      */
     func photoViewController(
-        _ photoViewController: PhotoViewController,
+        _ photoViewController: PhotoViewController<Photo>,
         didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
     )
 }
 
 extension PhotoViewControllerDelegate {
     func photoViewController(
-        _ photoViewController: PhotoViewController,
+        _ photoViewController: PhotoViewController<Photo>,
         didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
     ) {}
 }
@@ -34,11 +35,8 @@ extension PhotoViewControllerDelegate {
 /**
  *  The view controller controlling the display of a single photo object.
  */
-public final class PhotoViewController: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
-    public static let photoImageUpdatedNotification =
-        Notification.Name("NYTPhotoViewControllerPhotoImageUpdatedNotification")
-
-    public let photo: (any NYTPhoto)?
+public final class PhotoViewController<Photo: NYTPhoto>: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
+    public let photo: Photo?
     public var interstitialView: UIView?
     public let photoViewItemIndex: Int
 
@@ -75,7 +73,7 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
     /**
      *  The object that acts as the photo view controller's delegate.
      */
-    public weak var delegate: (any PhotoViewControllerDelegate)?
+    public weak var delegate: (any PhotoViewControllerDelegate<Photo>)?
 
     deinit {
         scalingImageView.delegate = nil
@@ -101,7 +99,7 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
         notificationCenter?.addObserver(
             self,
             selector: #selector(photoImageUpdated(with:)),
-            name: Self.photoImageUpdatedNotification,
+            name: .NYTPhotoViewer.photoImageUpdatedNotification,
             object: nil
         )
 
@@ -146,7 +144,7 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
      *                            the ``photoImageUpdatedNotification``.
      */
     public init(
-        photo: (any NYTPhoto)?,
+        photo: Photo?,
         itemIndex: Int,
         loadingView: UIView?,
         notificationCenter: NotificationCenter?,
@@ -173,8 +171,7 @@ public final class PhotoViewController: UIViewController, PhotoViewerContainer, 
 
     @objc
     private func photoImageUpdated(with notification: Notification) {
-        // TODO: Use Swift equality instead of isEqual
-        if let photo = notification.object as? NYTPhoto, photo.isEqual(self.photo) {
+        if let photo = notification.object as? Photo, photo == self.photo {
             updateImage(photo.image)
         }
     }

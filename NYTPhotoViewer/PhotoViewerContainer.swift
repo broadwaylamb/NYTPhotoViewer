@@ -12,13 +12,15 @@ import UIKit
  *  A protocol that defines that an object contains a photo or interstitial view property
  *  and the index of the item in the collection.
  */
-public protocol PhotoViewerContainer {
+public protocol PhotoViewerContainer<Photo> {
+
+    associatedtype Photo: NYTPhoto
 
     /**
      *  An object conforming to the ``NYTPhoto`` protocol.
      *  Will be `nil` if the container has a view.
      */
-    var photo: (any NYTPhoto)? { get }
+    var photo: Photo? { get }
 
     /**
      *  A view to be displayed instead of a photo.

@@ -9,12 +9,12 @@
 import UIKit
 
 /**
- *  The model for photos displayed in an ``NYTPhotosViewController``.
+ *  The model for photos displayed in an ``PhotosViewController``.
  *
- *  Your models (or boxes, if working with Swift value types) should override `isEqual:`
- *  to provide a concept of identity for the PhotoViewer to work with.
+ *  Your models should implement `==` to provide a concept of identity for the PhotoViewer
+ *  to work with.
  */
-public protocol NYTPhoto: NSObjectProtocol {
+public protocol NYTPhoto: Equatable {
 
     /**
      *  The image to display.

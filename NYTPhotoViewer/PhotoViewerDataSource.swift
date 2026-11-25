@@ -9,16 +9,18 @@
 import UIKit
 
 /**
- *  The data source for an ``NYTPhotosViewController`` instance.
+ *  The data source for an ``PhotosViewController`` instance.
  *
  *  A view controller, view model, or model in your application could conform to this
  *  protocol, depending on what makes sense in your architecture.
  *
- *  Alternatively, `NYTPhotoViewerArrayDataSource` and
- *  `NYTPhotoViewerSinglePhotoDataSource` are concrete classes which conveniently handle
+ *  Alternatively, ``PhotoViewerArrayDataSource`` and
+ *  ``PhotoViewerSinglePhotoDataSource`` are concrete classes which conveniently handle
  *  the most common use cases for NYTPhotoViewer.
  */
-public protocol PhotoViewerDataSource: AnyObject {
+public protocol PhotoViewerDataSource<Photo>: AnyObject {
+
+    associatedtype Photo: NYTPhoto
 
     /**
      *  The total number of photos in the data source, or `nil` if the number is
@@ -35,7 +37,7 @@ public protocol PhotoViewerDataSource: AnyObject {
      *  @return The index of a given photo, or `nil if the photo is not in
      *  the data source.
      */
-    func index(of photo: any NYTPhoto) -> Int?
+    func index(of photo: Photo) -> Int?
 
     /**
      *  Returns the photo object at a specified index, or `nil` if one does not exist at
@@ -46,7 +48,7 @@ public protocol PhotoViewerDataSource: AnyObject {
      *  @return The photo object at a specified index, or `nil` if one does not exist at
      *  that index.
      */
-    subscript(photoIndex: Int) -> (any NYTPhoto)? { get }
+    subscript(photoIndex: Int) -> Photo? { get }
 
     /**
      *  The total number of interstitial views in the data source, or `nil` if the number
