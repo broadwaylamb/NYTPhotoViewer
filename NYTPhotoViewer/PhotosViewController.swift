@@ -9,11 +9,12 @@
 import UIKit
 import LinkPresentation
 
+@MainActor
 public final class PhotosViewController<Photo: PhotoProtocol>
     : UIViewController,
       UIPageViewControllerDataSource,
       UIPageViewControllerDelegate,
-      UIActivityItemSource
+      @MainActor UIActivityItemSource
 {
     private static var overlayAnimationDuration: CGFloat { 0.2 }
     private static var interPhotoSpacing: CGFloat { 16 }
@@ -73,11 +74,6 @@ public final class PhotosViewController<Photo: PhotoProtocol>
      *  The object that acts as the delegate of the ``PhotosViewController``.
      */
     public weak var delegate: (any PhotosViewControllerDelegate<Photo>)?
-
-    deinit {
-        pageViewController.dataSource = nil
-        pageViewController.delegate = nil
-    }
 
     // MARK: - NSObject(UIResponderStandardEditActions)
 

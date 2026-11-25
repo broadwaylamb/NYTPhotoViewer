@@ -12,6 +12,7 @@ import UIKit
  *  Allows a view to opt-in to receiving a hint of its layout width.
  *  This aids in calculating an appropriate intrinsic content size.
  */
+@MainActor
 public protocol PhotoCaptionViewLayoutWidthHinting: AnyObject {
 
     /**

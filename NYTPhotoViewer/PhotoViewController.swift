@@ -8,6 +8,7 @@
 
 import UIKit
 
+@MainActor
 public protocol PhotoViewControllerDelegate<Photo>: AnyObject {
     associatedtype Photo: PhotoProtocol
 
@@ -75,7 +76,6 @@ public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, 
     public weak var delegate: (any PhotoViewControllerDelegate<Photo>)?
 
     deinit {
-        scalingImageView.delegate = nil
         notificationCenter?.removeObserver(self)
     }
 
