@@ -133,7 +133,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
 
         addOverlayView()
 
-        transitionController.startingView = referenceViewForCurrentPhoto;
+        transitionController.startingView = referenceViewForCurrentPhoto
 
         if currentlyDisplayedPhoto?.state.image != nil {
             transitionController.endingView =
@@ -198,7 +198,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         super.init(nibName: nil, bundle: nil)
 
         modalPresentationStyle = .fullScreen
-        transitioningDelegate = transitionController;
+        transitioningDelegate = transitionController
         modalPresentationCapturesStatusBarAppearance = true
 
         let leftBarButtonItem = UIBarButtonItem(
@@ -219,8 +219,8 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         overlayView.rightBarButtonItem = rightBarButtonItem
         rightBarButtonItem.tintColor = .white
 
-        pageViewController.delegate = self;
-        pageViewController.dataSource = self;
+        pageViewController.delegate = self
+        pageViewController.dataSource = self
     }
 
     private func configurePageViewControllerWithInitialPhoto() {
@@ -627,12 +627,13 @@ public final class PhotosViewController<Photo: PhotoProtocol>
 
     /// internal helper method for the following two delegate methods
     private func nextViewController(
-        fromIndex itemIndex: Int,
+        fromIndex startingIndex: Int,
         delta: Int,
         stopBeforeIndex: Int
     ) -> PhotoViewController<Photo>? {
         guard let dataSource else { return nil }
-        if itemIndex + delta != stopBeforeIndex {
+        let itemIndex = startingIndex + delta
+        if itemIndex != stopBeforeIndex {
             return dataSource[itemIndex].map {
                 newPhotoViewController(for: $0, atIndex: itemIndex)
             }

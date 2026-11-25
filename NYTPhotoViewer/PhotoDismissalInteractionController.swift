@@ -145,7 +145,7 @@ public final class PhotoDismissalInteractionController: NSObject, UIViewControll
                 animationDuration = abs(finalPageViewCenterPoint.y - viewToPan.center.y) / abs(velocityY)
                 animationDuration = min(animationDuration, Self.panDismissMaximumDuration)
 
-                finalBackgroundAlpha = 0.0;
+                finalBackgroundAlpha = 0.0
             }
         } else {
             // Interactive transition was canceled (i.e. the user changed their mind and
@@ -192,7 +192,7 @@ public final class PhotoDismissalInteractionController: NSObject, UIViewControll
         withVerticalDelta verticalDelta: CGFloat,
     ) -> CGFloat {
         let startingAlpha: CGFloat = 1.0
-        let finalAlpha: CGFloat = 0.1;
+        let finalAlpha: CGFloat = 0.1
         let totalAvailableAlpha = startingAlpha - finalAlpha
 
         let maximumDelta = fromView.bounds.height / 2 // Arbitrary value.
