@@ -20,7 +20,7 @@ import UIKit
  */
 public protocol PhotoViewerDataSource<Photo>: AnyObject {
 
-    associatedtype Photo: NYTPhoto
+    associatedtype Photo: PhotoProtocol
 
     /**
      *  The total number of photos in the data source, or `nil` if the number is

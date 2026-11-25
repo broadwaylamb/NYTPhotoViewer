@@ -9,7 +9,7 @@
 import UIKit
 
 public protocol PhotoViewControllerDelegate<Photo>: AnyObject {
-    associatedtype Photo: NYTPhoto
+    associatedtype Photo: PhotoProtocol
 
     /**
      *  Called when a long press is recognized.
@@ -35,7 +35,7 @@ extension PhotoViewControllerDelegate {
 /**
  *  The view controller controlling the display of a single photo object.
  */
-public final class PhotoViewController<Photo: NYTPhoto>: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
+public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
     public let photo: Photo?
     public var interstitialView: UIView?
     public let photoViewItemIndex: Int

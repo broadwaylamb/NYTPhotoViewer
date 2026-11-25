@@ -14,7 +14,7 @@ import UIKit
  */
 public protocol PhotoViewerContainer<Photo> {
 
-    associatedtype Photo: NYTPhoto
+    associatedtype Photo: PhotoProtocol
 
     /**
      *  An object conforming to the ``NYTPhoto`` protocol.

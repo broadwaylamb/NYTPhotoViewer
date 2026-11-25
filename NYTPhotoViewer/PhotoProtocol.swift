@@ -1,5 +1,5 @@
 //
-//  NYTPhoto.h
+//  PhotoProtocol.swift
 //  NYTPhotoViewer
 //
 //  Created by Brian Capps on 2/10/15.
@@ -14,7 +14,7 @@ import UIKit
  *  Your models should implement `==` to provide a concept of identity for the PhotoViewer
  *  to work with.
  */
-public protocol NYTPhoto: Equatable {
+public protocol PhotoProtocol: Equatable {
 
     /**
      *  The image to display, or a placeholder image for display while the image

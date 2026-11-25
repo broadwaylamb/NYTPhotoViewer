@@ -12,7 +12,7 @@ import Foundation
  *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with a single
  *  image.
  */
-public final class PhotoViewerSinglePhotoDataSource<Photo: NYTPhoto>: PhotoViewerDataSource {
+public final class PhotoViewerSinglePhotoDataSource<Photo: PhotoProtocol>: PhotoViewerDataSource {
     public let photo: Photo
 
     public init(photo: Photo) {

@@ -14,7 +14,7 @@ import UIKit
  */
 public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
 
-    associatedtype Photo: NYTPhoto
+    associatedtype Photo: PhotoProtocol
 
     /**
      *  Called when a new photo is displayed through a swipe gesture.
@@ -76,7 +76,7 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
      *  `intrinsicContentSize` appropriately to calculate height.
      *
      *  @note Your implementation can get caption information from the appropriate
-     *        properties on the given `NYTPhoto`.
+     *        properties on the given ``PhotoProtocol``.
      *
      *  @param photosViewController The ``PhotosViewController`` instance that sent
      *                              the delegate message.
@@ -115,7 +115,7 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
      *
      *  This small area of the screen is not intended to display a caption or similar
      *  information about the photo itself. (NYTPhotoViewer is designed to provide this
-     *  information in the caption view, and as such the `NYTPhoto` protocol provides
+     *  information in the caption view, and as such the ``PhotoProtocol`` provides
      *  properties for a title, summary, and credit for each photo.) Instead, consider
      *  using this delegate method to customize how your app displays the user's progress
      *  through a set of photos.
@@ -160,7 +160,7 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
 
     /**
      *  Returns the view from which to animate for a given object conforming to
-     *  the `NYTPhoto` protocol.
+     *  the ``PhotoProtocol``.
      *
      *  @param photosViewController The ``PhotosViewController`` instance that sent
      *                              the delegate message.
@@ -174,8 +174,8 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
     ) -> UIView?
 
     /**
-     *  Returns the maximum zoom scale for a given object conforming to the `NYTPhoto`
-     *  protocol.
+     *  Returns the maximum zoom scale for a given object conforming to
+     *  the ``PhotoProtocol``.
      *
      *  @param photosViewController The ``PhotosViewController`` instance that sent
      *                              the delegate message.

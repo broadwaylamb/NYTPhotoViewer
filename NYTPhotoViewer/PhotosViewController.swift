@@ -9,7 +9,7 @@
 import UIKit
 import LinkPresentation
 
-public final class PhotosViewController<Photo: NYTPhoto>
+public final class PhotosViewController<Photo: PhotoProtocol>
     : UIViewController,
       UIPageViewControllerDataSource,
       UIPageViewControllerDelegate,
@@ -630,7 +630,7 @@ public final class PhotosViewController<Photo: NYTPhoto>
     }
 
     /**
-     *  The object conforming to `NYTPhoto` that is currently being displayed by
+     *  The object conforming to ``PhotoProtocol`` that is currently being displayed by
      *  the ``pageViewController``.
      *
      *  This photo will be one of the photos from the data source.
