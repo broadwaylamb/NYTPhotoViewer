@@ -152,7 +152,7 @@ public final class PhotoViewController<Photo: NYTPhoto>: UIViewController, Photo
         self.photo = photo
         self.photoViewItemIndex = itemIndex
 
-        let photoImage = photo?.image ?? photo?.placeholderImage
+        let photoImage = photo?.state.image
         scalingImageView = ScalingImageView(image: photoImage, frame: .zero)
         self.loadingView = photoImage == nil ? Self.setupLoadingView(loadingView) : nil
         self.notificationCenter = notificationCenter
@@ -172,7 +172,7 @@ public final class PhotoViewController<Photo: NYTPhoto>: UIViewController, Photo
     @objc
     private func photoImageUpdated(with notification: Notification) {
         if let photo = notification.object as? Photo, photo == self.photo {
-            updateImage(photo.image)
+            updateImage(photo.state.image)
         }
     }
 

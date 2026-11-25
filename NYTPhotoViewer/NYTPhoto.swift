@@ -17,16 +17,10 @@ import UIKit
 public protocol NYTPhoto: Equatable {
 
     /**
-     *  The image to display.
+     *  The image to display, or a placeholder image for display while the image
+     *  is loading.
      */
-    var image: UIImage? { get } // TODO: Make non-optional
-
-    /**
-     *  A placeholder image for display while the image is loading.
-     *
-     *  This property is used if and only if ``imageData`` and ``image`` return `nil`.
-     */
-    var placeholderImage: UIImage? { get }
+    var state: PhotoState { get }
 
     // MARK: Caption
 
@@ -44,4 +38,19 @@ public protocol NYTPhoto: Equatable {
      *  An attributed string for display as the credit of the caption.
      */
     var attributedCaptionCredit: NSAttributedString? { get }
+}
+
+public enum PhotoState: Equatable, Hashable, Sendable {
+    case loaded(UIImage)
+    case placeholder(UIImage)
+    case none
+
+    var image: UIImage? {
+        switch self {
+        case .loaded(let image), .placeholder(let image):
+            image
+        case .none:
+            nil
+        }
+    }
 }

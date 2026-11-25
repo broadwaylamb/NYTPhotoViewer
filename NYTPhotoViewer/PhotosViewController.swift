@@ -82,7 +82,9 @@ public final class PhotosViewController<Photo: NYTPhoto>
     // MARK: - NSObject(UIResponderStandardEditActions)
 
     public override func copy(_ sender: Any?) {
-        UIPasteboard.general.image = currentlyDisplayedPhoto?.image
+        if case .loaded(let image) = currentlyDisplayedPhoto?.state {
+            UIPasteboard.general.image = image
+        }
     }
 
     // MARK: - UIResponder
@@ -94,9 +96,10 @@ public final class PhotosViewController<Photo: NYTPhoto>
         _ action: Selector,
         withSender sender: Any?
     ) -> Bool {
-        if shouldHandleLongPress &&
-            action == #selector(copy(_:)) &&
-            currentlyDisplayedPhoto?.image != nil {
+        if shouldHandleLongPress,
+           action == #selector(copy(_:)),
+           case .loaded = currentlyDisplayedPhoto?.state
+        {
             return true
         }
 
@@ -136,9 +139,9 @@ public final class PhotosViewController<Photo: NYTPhoto>
 
         transitionController.startingView = referenceViewForCurrentPhoto;
 
-        if let currentlyDisplayedPhoto,
-           currentlyDisplayedPhoto.image != nil || currentlyDisplayedPhoto.placeholderImage != nil {
-            transitionController.endingView = currentPhotoViewController?.scalingImageView.imageView
+        if currentlyDisplayedPhoto?.state.image != nil {
+            transitionController.endingView =
+                currentPhotoViewController?.scalingImageView.imageView
         } else {
             transitionController.endingView = nil
         }
@@ -311,7 +314,7 @@ public final class PhotosViewController<Photo: NYTPhoto>
             handleActionButtonTappedFor: currentlyDisplayedPhoto
         ) ?? false
 
-        if !clientDidHandle, let image = currentlyDisplayedPhoto.image {
+        if !clientDidHandle, case .loaded(let image) = currentlyDisplayedPhoto.state {
             let activityViewController = UIActivityViewController(
                 activityItems: [self, image],
                 applicationActivities: nil
@@ -475,8 +478,7 @@ public final class PhotosViewController<Photo: NYTPhoto>
         }
 
         var startingView: UIView?
-        if let currentlyDisplayedPhoto,
-           currentlyDisplayedPhoto.image != nil || currentlyDisplayedPhoto.placeholderImage != nil {
+        if currentlyDisplayedPhoto?.state.image != nil {
             startingView = currentPhotoViewController?.scalingImageView.imageView
         }
 
