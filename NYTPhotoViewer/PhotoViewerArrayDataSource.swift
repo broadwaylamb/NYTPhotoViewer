@@ -11,7 +11,7 @@ import Foundation
 
 /**
  *  A simple concrete implementation of ``PhotoViewerDataSource``, for use with an array
- *  of images. Does not support interstitial views.
+ *  of images.
  */
 public final class PhotoViewerArrayDataSource<Photo: PhotoProtocol>: PhotoViewerDataSource {
     public let photos: [Photo]

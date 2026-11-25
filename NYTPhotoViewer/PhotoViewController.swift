@@ -36,8 +36,7 @@ extension PhotoViewControllerDelegate {
  *  The view controller controlling the display of a single photo object.
  */
 public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, UIScrollViewDelegate {
-    public let photo: Photo?
-    public var interstitialView: UIView?
+    public let photo: Photo
     public let photoViewItemIndex: Int
 
     /**
@@ -82,15 +81,8 @@ public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, 
 
     // MARK: - UIViewController
 
-    public override convenience init(
-        nibName nibNameOrNil: String?,
-        bundle nibBundleOrNil: Bundle?
-    ) {
-        self.init(photo: nil, itemIndex: 0, loadingView: nil, notificationCenter: nil)
-    }
-
-    required convenience init?(coder: NSCoder) {
-        self.init(photo: nil, itemIndex: 0, loadingView: nil, notificationCenter: nil)
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     public override func viewDidLoad() {
@@ -144,7 +136,7 @@ public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, 
      *                            the ``photoImageUpdatedNotification``.
      */
     public init(
-        photo: Photo?,
+        photo: Photo,
         itemIndex: Int,
         loadingView: UIView?,
         notificationCenter: NotificationCenter?,
@@ -152,7 +144,7 @@ public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, 
         self.photo = photo
         self.photoViewItemIndex = itemIndex
 
-        let photoImage = photo?.state.image
+        let photoImage = photo.state.image
         scalingImageView = ScalingImageView(image: photoImage, frame: .zero)
         self.loadingView = photoImage == nil ? Self.setupLoadingView(loadingView) : nil
         self.notificationCenter = notificationCenter

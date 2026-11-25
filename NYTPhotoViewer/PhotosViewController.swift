@@ -178,7 +178,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         dismiss(animated: flag, userInitiated: false, completion: completion)
     }
 
-    // MARK: - NYTPhotosViewController
+    // MARK: - PhotosViewController
 
     /**
      *  Initializes a ``PhotosViewController`` with the given data source and delegate,
@@ -523,14 +523,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         _ viewController: PhotoViewController<Photo>,
         animated: Bool
     ) {
-        var animated = animated
-        if let photo = viewController.photo,
-           let currentlyDisplayedPhoto,
-           photo == currentlyDisplayedPhoto
-        {
-            animated = false
-        }
-
+        let animated = animated && viewController.photo != currentlyDisplayedPhoto
         let currentIdx = currentPhotoViewController?.photoViewItemIndex ?? 0
         let newIdx = viewController.photoViewItemIndex
         let direction: UIPageViewController.NavigationDirection = newIdx < currentIdx
@@ -599,34 +592,11 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         return photoViewController
     }
 
-    private func newViewController(atIndex index: Int) -> UIViewController? {
-        guard let view = delegate?.photosViewController(
-            self,
-            interstitialViewAtIndex: index
-        ) else {
-            return nil
-        }
-        let interstitialViewController = InterstitialViewController(
-            view: view,
-            itemIndex: index
-        )
-        return interstitialViewController
-    }
-
     private func didNavigate(to photo: Photo, atIndex index: Int) {
         delegate?.photosViewController(self, didNavigateTo: photo, atIndex: index)
         NotificationCenter
             .default
             .post(name: .NYTPhotoViewer.didNavigateToPhotoNotification, object: self)
-    }
-
-    private func didNavigate(toInterstitialView view: UIView, atIndex index: Int) {
-        delegate?
-            .photosViewController(self, didNavigateToInterstialView: view, atIndex: index)
-        NotificationCenter.default.post(
-            name: .NYTPhotoViewer.didNavigateToInterstitialViewNotification,
-            object: self
-        )
     }
 
     /**
@@ -654,30 +624,21 @@ public final class PhotosViewController<Photo: PhotoProtocol>
     }
 
     private var totalItemCount: Int {
-        let numberOfInterstitialViews = dataSource?.numberOfInterstitialViews ?? 0
-        return dataSource?.numberOfPhotos ?? 0 + numberOfInterstitialViews
+        dataSource?.numberOfPhotos ?? 0
     }
 
     // MARK: - UIPageViewControllerDataSource
 
     /// internal helper method for the following two delegate methods
     private func nextViewController(
-        fromIndex startingIndex: Int,
+        fromIndex itemIndex: Int,
         delta: Int,
         stopBeforeIndex: Int
-    ) -> UIViewController? {
+    ) -> PhotoViewController<Photo>? {
         guard let dataSource else { return nil }
-        var itemIndex = startingIndex
-        while itemIndex + delta != stopBeforeIndex {
-            itemIndex += delta
-
-            if dataSource.isPhoto(atIndex: itemIndex) {
-                return dataSource[itemIndex].map {
-                    newPhotoViewController(for: $0, atIndex: itemIndex)
-                }
-            }
-            if let possibleVC = newViewController(atIndex: itemIndex) {
-                return possibleVC
+        if itemIndex + delta != stopBeforeIndex {
+            return dataSource[itemIndex].map {
+                newPhotoViewController(for: $0, atIndex: itemIndex)
             }
         }
         return nil
@@ -724,14 +685,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         guard let viewController = currentPhotoViewController else {
             return
         }
-        if let photo = viewController.photo {
-            didNavigate(to: photo, atIndex: viewController.photoViewItemIndex)
-        } else if let interstitialView = viewController.interstitialView {
-            didNavigate(
-                toInterstitialView: interstitialView,
-                atIndex: viewController.photoViewItemIndex
-            )
-        }
+        didNavigate(to: viewController.photo, atIndex: viewController.photoViewItemIndex)
     }
 
     // MARK: UIActivityItemSource protocol procedures to support sharesheet
@@ -767,12 +721,11 @@ extension PhotosViewController: PhotoViewControllerDelegate {
         _ photoViewController: PhotoViewController<Photo>,
         didLongPressWithGestureRecognizer longPressGestureRecognizer: UILongPressGestureRecognizer
     ) {
-        guard let photo = photoViewController.photo else { return }
         shouldHandleLongPress = false
 
         let clientDidHandle = delegate?.photosViewController(
             self,
-            handleLongPressFor: photo,
+            handleLongPressFor: photoViewController.photo,
             withGestureRecognizer: longPressGestureRecognizer
         ) ?? false
 

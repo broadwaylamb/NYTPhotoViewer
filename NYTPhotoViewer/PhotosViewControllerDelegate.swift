@@ -31,20 +31,6 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
     )
 
     /**
-     *  Called when a new interstitial view is displayed through a swipe gesture.
-     *
-     *  @param photosViewController The ``PhotosViewController`` instance that sent
-     *                              the delegate message.
-     *  @param view                 The view that was just displayed.
-     *  @param index                The index of the view that was just displayed.
-     */
-    func photosViewController(
-        _ photosViewController: PhotosViewController<Photo>,
-        didNavigateToInterstialView view: UIView,
-        atIndex index: Int
-    )
-
-    /**
      *  Called immediately before the ``PhotosViewController`` is about to start
      *  a user-initiated dismissal.
      *  This will be the beginning of the interactive panning to dismiss, if it is enabled
@@ -235,22 +221,6 @@ public protocol PhotosViewControllerDelegate<Photo>: AnyObject {
         _ photosViewController: PhotosViewController<Photo>,
         actionCompletedWithActivityType activityType: UIActivity.ActivityType
     )
-
-    /**
-     *  Called when an ``InterstitialViewController`` is created but before it is
-     *  displayed. Returns the view to display as an interstitial view.
-     *
-     *  @param photosViewController The ``PhotosViewController`` instance that sent
-     *                              the delegate message.
-     *  @param index                The index in the page view controller where the view
-     *                              will be displayed.
-     *
-     *  @return A `UIView`.
-     */
-    func photosViewController(
-        _ photosViewController: PhotosViewController<Photo>,
-        interstitialViewAtIndex index: Int
-    ) -> UIView?
 }
 
 extension PhotosViewControllerDelegate {
@@ -258,12 +228,6 @@ extension PhotosViewControllerDelegate {
         _ photosViewController: PhotosViewController<Photo>,
         didNavigateTo photo: Photo,
         atIndex photoIndex: Int
-    ) {}
-
-    func photosViewController(
-        _ photosViewController: PhotosViewController<Photo>,
-        didNavigateToInterstialView view: UIView,
-        atIndex index: Int
     ) {}
 
     func photosViewControllerWillDismiss(
@@ -337,11 +301,4 @@ extension PhotosViewControllerDelegate {
         _ photosViewController: PhotosViewController<Photo>,
         actionCompletedWithActivityType activityType: UIActivity.ActivityType
     ) {}
-
-    func photosViewController(
-        _ photosViewController: PhotosViewController<Photo>,
-        interstitialViewAtIndex index: Int
-    ) -> UIView? {
-        nil
-    }
 }

@@ -49,45 +49,5 @@ public protocol PhotoViewerDataSource<Photo>: AnyObject {
      *  that index.
      */
     subscript(photoIndex: Int) -> Photo? { get }
-
-    /**
-     *  The total number of interstitial views in the data source, or `nil` if the number
-     *  is not known.
-     *
-     *  The number returned should package an `NSInteger` value.
-     */
-    var numberOfInterstitialViews: Int? { get }
-
-    /**
-     *  Indicates if the item at the specified index is a photo.
-     *
-     *  @return `true` if the item at the specified index is a photo, `false` otherwise.
-     */
-    func isPhoto(atIndex idx: Int) -> Bool
-
-    /**
-     *  Indicates if the item at the specified index is an interstitial view.
-     *
-     *  @return `true` if the item at the specified index is an interstitial view,
-     *  `false` otherwise.
-     */
-    func isInterstitialView(atIndex idx: Int) -> Bool
 }
 
-extension PhotoViewerDataSource {
-    public var numberOfInterstitialViews: Int? { nil }
-
-    public func isPhoto(atIndex idx: Int) -> Bool {
-        true
-    }
-
-    /**
-     *  Indicates if the item at the specified index is an interstitial view.
-     *
-     *  @return `true` if the item at the specified index is an interstitial view,
-     *  `false` otherwise.
-     */
-    public func isInterstitialView(atIndex idx: Int) -> Bool {
-        false
-    }
-}

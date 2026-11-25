@@ -18,9 +18,6 @@ extension Notification.Name {
         public static let didNavigateToPhotoNotification =
             Notification.Name("NYTPhotosViewControllerDidNavigateToPhotoNotification")
 
-        public static let didNavigateToInterstitialViewNotification =
-            Notification.Name("NYTPhotosViewControllerDidNavigateToInterstitialViewNotification")
-
         /**
          *  Notification name issued when this ``PhotosViewController`` is about to be
          *  dismissed.
