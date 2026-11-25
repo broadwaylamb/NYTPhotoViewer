@@ -66,7 +66,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
     /**
      *  The data source underlying this ``PhotosViewController``.
      *
-     *  After setting a new data source, you must call ``reloadPhotosAnimated``.
+     *  After setting a new data source, you must call ``reloadPhotos(animated:)``.
      */
     public weak var dataSource: (any PhotoViewerDataSource<Photo>)?
 
@@ -406,7 +406,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         guard let photo = dataSource?[photoIndex] else { return }
 
         notificationCenter
-            .post(name: .NYTPhotoViewer.photoImageUpdatedNotification, object: photo)
+            .post(name: .NYTPhotoViewer.photoImageUpdated, object: photo)
 
         if currentlyDisplayedPhoto == photo {
             updateOverlayInformation()
@@ -491,7 +491,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         }
 
         NotificationCenter.default
-            .post(name: .NYTPhotoViewer.willDismissNotification, object: self)
+            .post(name: .NYTPhotoViewer.willDismiss, object: self)
 
         super.dismiss(animated: animated) {
             let isStillOnscreen = self.view.window != nil // Happens when the dismissal is canceled.
@@ -506,7 +506,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
                 }
 
                 NotificationCenter.default
-                    .post(name: .NYTPhotoViewer.didDismissNotification, object: self)
+                    .post(name: .NYTPhotoViewer.didDismiss, object: self)
             }
 
             completion?()
@@ -592,7 +592,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
         delegate?.photosViewController(self, didNavigateTo: photo, atIndex: index)
         NotificationCenter
             .default
-            .post(name: .NYTPhotoViewer.didNavigateToPhotoNotification, object: self)
+            .post(name: .NYTPhotoViewer.didNavigateToPhoto, object: self)
     }
 
     /**

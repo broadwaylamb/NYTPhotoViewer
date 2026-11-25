@@ -44,11 +44,11 @@ public final class ScalingImageView: UIScrollView {
     // MARK: - ScalingImageView
 
     /**
-     *  Initializes a scaling image view with a ``UIImage``. This object is
-     *  a ``UIScrollView`` that contains a ``UIImageView``. This allows for zooming and
+     *  Initializes a scaling image view with a ``/UIKit/UIImage``. This object is
+     *  a ``/UIKit/UIScrollView`` that contains a ``/UIKit/UIImageView``. This allows for zooming and
      *  panning around the image.
      *
-     *  @param image A ``UIImage`` for zooming and panning.
+     *  @param image A ``/UIKit/UIImage`` for zooming and panning.
      *  @param frame The frame of the view.
      */
     public init(image: UIImage?, frame: CGRect) {

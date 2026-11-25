@@ -9,7 +9,7 @@
 import UIKit
 
 /**
- *  A view that overlays an ``NYTPhotosViewController``, and houses the left and right bar
+ *  A view that overlays an ``PhotosViewController``, and houses the left and right bar
  *  button items, a title, and a caption view.
  */
 open class PhotosOverlayView: UIView {

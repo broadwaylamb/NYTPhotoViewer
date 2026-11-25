@@ -91,7 +91,7 @@ public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, 
         notificationCenter?.addObserver(
             self,
             selector: #selector(photoImageUpdated(with:)),
-            name: .NYTPhotoViewer.photoImageUpdatedNotification,
+            name: .NYTPhotoViewer.photoImageUpdated,
             object: nil
         )
 
@@ -133,7 +133,7 @@ public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, 
      *  @param loadingView        The view to display while the photo's image loads.
      *                            This view will be hidden when the image loads.
      *  @param notificationCenter The notification center on which to observe
-     *                            the ``photoImageUpdatedNotification``.
+     *                            the ``/Foundation/Notification.Name.NYTPhotoViewer.photoImageUpdated``.
      */
     public init(
         photo: Photo,

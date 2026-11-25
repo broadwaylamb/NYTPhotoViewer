@@ -15,7 +15,7 @@ extension Notification.Name {
          *
          *  Includes the ``PhotosViewController`` instance, as the notification's object.
          */
-        public static let didNavigateToPhotoNotification =
+        public static let didNavigateToPhoto =
             Notification.Name("NYTPhotosViewControllerDidNavigateToPhotoNotification")
 
         /**
@@ -24,7 +24,7 @@ extension Notification.Name {
          *
          *  Includes the ``PhotosViewController`` instance, as the notification's object.
          */
-        public static let willDismissNotification =
+        public static let willDismiss =
             Notification.Name("NYTPhotosViewControllerWillDismissNotification")
 
         /**
@@ -34,10 +34,10 @@ extension Notification.Name {
          *
          *  Includes the ``PhotosViewController`` instance, as the notification's object.
          */
-        public static let didDismissNotification =
+        public static let didDismiss =
             Notification.Name("NYTPhotosViewControllerDidDismissNotification")
 
-        public static let photoImageUpdatedNotification =
+        public static let photoImageUpdated =
             Notification.Name("NYTPhotoViewControllerPhotoImageUpdatedNotification")
     }
 }
