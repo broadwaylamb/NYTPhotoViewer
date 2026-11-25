@@ -520,7 +520,7 @@ public final class PhotosViewController<Photo: PhotoProtocol>
     // MARK: - Convenience
 
     private func setCurrentlyDisplayedViewController(
-        _ viewController: any UIViewController & PhotoViewerContainer<Photo>,
+        _ viewController: PhotoViewController<Photo>,
         animated: Bool
     ) {
         var animated = animated

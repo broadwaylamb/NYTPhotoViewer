@@ -35,7 +35,7 @@ extension PhotoViewControllerDelegate {
 /**
  *  The view controller controlling the display of a single photo object.
  */
-public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, PhotoViewerContainer, UIScrollViewDelegate {
+public final class PhotoViewController<Photo: PhotoProtocol>: UIViewController, UIScrollViewDelegate {
     public let photo: Photo?
     public var interstitialView: UIView?
     public let photoViewItemIndex: Int
